@@ -1,35 +1,61 @@
 import fastify, { FastifyReply, FastifyRequest } from "fastify";
-import fjwt from "@fastify/jwt";
+import fjwt, { JWT } from "@fastify/jwt";
 import { userRoutes } from "./modules/user";
 
-export const server = fastify();
-
 declare module "fastify" {
+  export interface FastifyRequest {
+    jwt: JWT;
+  }
   export interface FastifyInstance {
-    auth: any
+    auth: any;
   }
 }
 
-server.register(fjwt, {
-  secret: String(process.env.JWT_SECRET)
-});
-
-server.decorate("auth", async (req: FastifyRequest, res: FastifyReply) => {
-  try {
-    await req.jwtVerify()
-    
-  } catch (error) {
-    return res.send(error);
+declare module "@fastify/jwt" {
+  interface FastifyJWT {
+    user: {
+      id: string;
+      email: string;
+      name: string;
+    }
   }
-})
+}
 
-const main = async () => {
+const buildServer = async () => {
+  const server = fastify();
 
-  server.register(userRoutes, {prefix: 'api/users'});
+  server.register(fjwt, {
+    secret: String(process.env.JWT_SECRET)
+  });
+
+  server.decorate(
+    "auth",
+    async (
+      req: FastifyRequest,
+      res: FastifyReply
+    ): Promise<void> => {
+      try {
+        await req.jwtVerify();
+      } catch (error) {
+        return res.send(error);
+      }
+    }
+  );
+
+  server.addHook(
+    "preHandler",
+    (req, res, next) => {
+      req.jwt = server.jwt;
+      return next();
+    }
+  );
+
+  server.register(userRoutes, { prefix: 'api/users' });
+
   try {
     await server.listen({
       port: 3000,
-      
+
     });
     console.log("Server running at http://localhost:3000")
   } catch (error) {
@@ -38,4 +64,4 @@ const main = async () => {
   }
 }
 
-main();
+buildServer();

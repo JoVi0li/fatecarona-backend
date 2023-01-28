@@ -15,5 +15,13 @@ const signinUserSchema = z.object({
   password: z.string({required_error:"A senha é obrigatória"}).min(8, "A senha precisa conter no mínimo 8 caracteres"),
 });
 
+const updateUserSchema = z.object({
+  name: z.string().min(3, "Nome inválido").nullable(),
+  photo: z.string().nullable(),
+  phone: z.string({required_error:"O número de celular é obrigatório"}).nullable(),
+  gender: z.enum(["MALE", "FEMALE"], {required_error: "O sexo é obrigatório"}).nullable()
+})
+
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type SigninUserInput = z.infer<typeof signinUserSchema>;
+export type UpdateUserInput = z.infer<typeof updateUserSchema>;

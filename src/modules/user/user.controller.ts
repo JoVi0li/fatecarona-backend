@@ -1,8 +1,7 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { CreateUserInput, SigninUserInput } from "./user.schema";
-import { createUser, findUserByEmail } from "./user.service";
+import { CreateUserInput, SigninUserInput, UpdateUserInput } from "./user.schema";
+import { createUser, deleteUserById, findUserById, findUserByEmail, updateUser } from "./user.service";
 import bcrypt from "bcrypt";
-import { server } from "../../app";
 
 export const createUserHandler = async (
   req: FastifyRequest<{ Body: CreateUserInput }>,
@@ -51,16 +50,97 @@ export const signinHandler = async (
 
   const { password, salt, ...rest } = user;
 
-  const token = server.jwt.sign({rest}, {
+  const token = req.jwt.sign({ ...rest }, {
     expiresIn: 604800,
     aud: "Fatecarona",
-    
+
   });
 
   return res.code(200).send({
     success: true,
     message: "Autenticado com sucesso",
-    token: token
+    data: token
   })
 
 };
+
+export const getUserHandler = async (
+  req: FastifyRequest,
+  res: FastifyReply
+) => {
+  const id = req.user.id;
+  console.log({ id })
+
+  const user = await findUserById(id);
+
+  if (!user) {
+    return res.code(404).send({
+      success: false,
+      message: "Usuário não encontrado"
+    });
+  }
+
+  const { password, salt, ...rest } = user;
+
+  return res.code(200).send({
+    success: true,
+    message: "Usuário encontrado",
+    data: rest
+  })
+};
+
+export const deleteUserHandler = async (
+  req: FastifyRequest,
+  res: FastifyReply
+) => {
+  const id = req.user.id;
+
+  const user = await deleteUserById(id);
+
+  if (!user) {
+    return res.code(500).send({
+      success: false,
+      message: "Não foi possível excluir a conta"
+    });
+  }
+
+  return res.code(200).send({
+    success: true,
+    message: "Conta removida com sucesso"
+  })
+}
+
+export const udpateUserHandler = async (
+  req: FastifyRequest<{ Body: UpdateUserInput }>,
+  res: FastifyReply,
+) => {
+  const newUser = req.body;
+  const id = req.user.id;
+
+  const user = await findUserById(id);
+
+  if (!user) {
+    return res.code(404).send({
+      success: false,
+      message: "Usuário não encontrado"
+    });
+  }
+
+  try {
+    const userUpdated = await updateUser(newUser, user);
+
+    const { password, salt, ...rest } = userUpdated;
+
+    return res.code(200).send({
+      success: true,
+      message: "Usuário atualizado com sucesso",
+      data: { ...rest }
+    })
+  } catch (error) {
+    return res.code(500).send({
+      success: false,
+      message: "Não foi possível atualizar o usuário",
+      error: error
+    })
+  }
+}

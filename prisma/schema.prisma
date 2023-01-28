@@ -15,7 +15,7 @@ model User {
   salt             String
   photo            String
   phone            String
-  identityDocument String
+  identityDocument String       @unique
   gender           Gender
   userCollege      UserCollege?
 }
@@ -56,6 +56,7 @@ model Course {
 
 model UserCollege {
   id                String          @id @default(uuid())
+  role              UserRoles       @default(NORMAL)
   user              User            @relation(fields: [userId], references: [id])
   documents         UserDocuments   @relation(fields: [userDocumentsId], references: [id])
   validations       UserValidations @relation(fields: [userValidationsId], references: [id])
@@ -95,4 +96,9 @@ enum EventStatus {
   WAITING_PARTICIPANTS
   IN_PROGRESS
   FINISHED
+}
+
+enum UserRoles {
+  NORMAL
+  ADMIN
 }
