@@ -1,0 +1,1 @@
+export { default as collegeRoutes } from "./college.route";
