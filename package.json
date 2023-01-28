@@ -1,0 +1,26 @@
+{
+  "name": "fatecarona-backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/JoVi0li/fatecarona-backend.git",
+  "author": "João Vitor <jovioli.dev04@gmail.com>",
+  "scripts": {
+    "dev": "tsnd --respawn --transpile-only --exit-child src/app.ts"
+  },
+  "dependencies": {
+    "@fastify/jwt": "5.0.0",
+    "@prisma/client": "^4.9.0",
+    "bcrypt": "^5.1.0",
+    "fastify": "^4.12.0",
+    "fastify-zod": "^1.2.0",
+    "zod": "^3.20.2",
+    "zod-to-json-schema": "^3.20.2"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.0",
+    "@types/fastify-jwt": "^0.8.1",
+    "@types/node": "^18.11.18",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^4.9.4"
+  }
+}

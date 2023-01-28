@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String       @id @default(uuid())
+  email            String       @unique
+  password         String
+  name             String
+  salt             String
+  photo            String
+  phone            String
+  identityDocument String
+  gender           Gender
+  userCollege      UserCollege?
+}
+
+model UserDocuments {
+  id               String       @id @default(uuid())
+  docPhotoFrontUrl String
+  docPhotoBackUrl  String
+  collegeDocUrl    String
+  userCollege      UserCollege?
+}
+
+model UserValidations {
+  id                   String       @id @default(uuid())
+  isDocPhotoFrontValid Boolean
+  isDocPhotoBackValid  Boolean
+  isCollegeDocValid    Boolean
+  isEmailVerified      Boolean
+  userCollege          UserCollege?
+}
+
+model College {
+  id           String        @id @default(uuid())
+  name         String        @unique
+  localization String[]
+  courses      Course[]
+  events       Event[]
+  students     UserCollege[]
+}
+
+model Course {
+  id        String     @id @default(uuid())
+  name      String
+  time      CourseTime
+  college   College    @relation(fields: [collegeId], references: [id])
+  collegeId String
+}
+
+model UserCollege {
+  id                String          @id @default(uuid())
+  user              User            @relation(fields: [userId], references: [id])
+  documents         UserDocuments   @relation(fields: [userDocumentsId], references: [id])
+  validations       UserValidations @relation(fields: [userValidationsId], references: [id])
+  college           College         @relation(fields: [collegeId], references: [id])
+  userId            String          @unique
+  userDocumentsId   String          @unique
+  userValidationsId String          @unique
+  collegeId         String          @unique
+  ownerEvents       Event[]         @relation(name: "event-owner")
+  participantEvents Event[]         @relation(name: "event-participant")
+}
+
+model Event {
+  id           String        @id @default(uuid())
+  owner        UserCollege   @relation(fields: [ownerId], references: [id], name: "event-owner")
+  participants UserCollege[] @relation(name: "event-participant")
+  aPoint       College       @relation(fields: [collegeId], references: [id])
+  bPoint       String[]
+  collegeId    String
+  ownerId      String
+  status       EventStatus
+  createdAt    DateTime      @default(now())
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum CourseTime {
+  AM
+  PM
+}
+
+enum EventStatus {
+  CREATED
+  WAITING_PARTICIPANTS
+  IN_PROGRESS
+  FINISHED
+}
