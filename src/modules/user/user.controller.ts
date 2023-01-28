@@ -48,13 +48,13 @@ export const signinHandler = async (
     });
   }
 
-
   const token = req.jwt.sign({
     userId: user.id,
     studentId: user.userCollege!.id,
     collegeId: user.userCollege!.collegeId,
     name: user.name,
-    email: user.email
+    email: user.email,
+    role: user.userCollege!.role,
   },
     {
       expiresIn: 604800,
