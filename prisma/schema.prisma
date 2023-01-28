@@ -43,15 +43,15 @@ model College {
   localization String[]
   courses      Course[]
   events       Event[]
-  students     UserCollege[]
 }
 
 model Course {
-  id        String     @id @default(uuid())
-  name      String
-  time      CourseTime
-  college   College    @relation(fields: [collegeId], references: [id])
-  collegeId String
+  id          String        @id @default(uuid())
+  name        String
+  time        CourseTime
+  college     College       @relation(fields: [collegeId], references: [id])
+  collegeId   String
+  UserCollege UserCollege[]
 }
 
 model UserCollege {
@@ -60,11 +60,11 @@ model UserCollege {
   user              User            @relation(fields: [userId], references: [id])
   documents         UserDocuments   @relation(fields: [userDocumentsId], references: [id])
   validations       UserValidations @relation(fields: [userValidationsId], references: [id])
-  college           College         @relation(fields: [collegeId], references: [id])
+  course            Course          @relation(fields: [courseId], references: [id])
   userId            String          @unique
   userDocumentsId   String          @unique
   userValidationsId String          @unique
-  collegeId         String          @unique
+  courseId          String
   ownerEvents       Event[]         @relation(name: "event-owner")
   participantEvents Event[]         @relation(name: "event-participant")
 }

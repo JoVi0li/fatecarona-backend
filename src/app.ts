@@ -19,6 +19,7 @@ declare module "@fastify/jwt" {
       userId: string;
       studentId: string;
       collegeId: string;
+      
       email: string;
       name: string;
       role: string;

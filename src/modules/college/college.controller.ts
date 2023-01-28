@@ -7,6 +7,15 @@ export const createCollegeHandler = async (
   res: FastifyReply,
 ) => {
   const body = req.body;
+  const role = req.user.role;
+
+  if(role !== "ADMIN") {
+    return res.code(401).send({
+      success: false,
+      message: "Você não possui permissão para realizar essa ação",
+      data: null,
+    });
+  }
 
   try {
     const college = await createCollege(body);
