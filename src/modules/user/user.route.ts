@@ -3,7 +3,7 @@ import { createUserHandler, deleteUserHandler, getUserHandler, signinHandler, ud
 
 const userRoutes = async (server: FastifyInstance) => {
 
-  server.post('/', { preHandler: [server.auth] }, createUserHandler);
+  server.post('/', createUserHandler);
 
   server.post('/signin', signinHandler);
 
@@ -15,4 +15,4 @@ const userRoutes = async (server: FastifyInstance) => {
 
 }
 
-export default userRoutes
+export default userRoutes;

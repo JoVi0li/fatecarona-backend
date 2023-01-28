@@ -14,7 +14,7 @@ export const createUserHandler = async (
     return res.code(201).send({
       success: true,
       message: "Usuário criado com sucesso",
-      userId: user.id,
+      data: user.id,
     })
   } catch (error) {
     return res.send({
@@ -48,13 +48,19 @@ export const signinHandler = async (
     });
   }
 
-  const { password, salt, ...rest } = user;
 
-  const token = req.jwt.sign({ ...rest }, {
-    expiresIn: 604800,
-    aud: "Fatecarona",
+  const token = req.jwt.sign({
+    userId: user.id,
+    studentId: user.userCollege!.id,
+    collegeId: user.userCollege!.collegeId,
+    name: user.name,
+    email: user.email
+  },
+    {
+      expiresIn: 604800,
+      aud: "Fatecarona",
 
-  });
+    });
 
   return res.code(200).send({
     success: true,
@@ -68,8 +74,7 @@ export const getUserHandler = async (
   req: FastifyRequest,
   res: FastifyReply
 ) => {
-  const id = req.user.id;
-  console.log({ id })
+  const id = req.user.userId;
 
   const user = await findUserById(id);
 
@@ -85,7 +90,7 @@ export const getUserHandler = async (
   return res.code(200).send({
     success: true,
     message: "Usuário encontrado",
-    data: rest
+    data: { ...rest }
   })
 };
 
@@ -93,7 +98,7 @@ export const deleteUserHandler = async (
   req: FastifyRequest,
   res: FastifyReply
 ) => {
-  const id = req.user.id;
+  const id = req.user.userId;
 
   const user = await deleteUserById(id);
 
@@ -106,7 +111,8 @@ export const deleteUserHandler = async (
 
   return res.code(200).send({
     success: true,
-    message: "Conta removida com sucesso"
+    message: "Conta removida com sucesso",
+    data: null
   })
 }
 
@@ -115,14 +121,15 @@ export const udpateUserHandler = async (
   res: FastifyReply,
 ) => {
   const newUser = req.body;
-  const id = req.user.id;
+  const id = req.user.userId;
 
   const user = await findUserById(id);
 
   if (!user) {
     return res.code(404).send({
       success: false,
-      message: "Usuário não encontrado"
+      message: "Usuário não encontrado",
+      data: null
     });
   }
 

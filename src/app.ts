@@ -1,6 +1,7 @@
 import fastify, { FastifyReply, FastifyRequest } from "fastify";
 import fjwt, { JWT } from "@fastify/jwt";
 import { userRoutes } from "./modules/user";
+import { userCollegeRoutes } from "./modules/userCollege";
 
 declare module "fastify" {
   export interface FastifyRequest {
@@ -14,7 +15,9 @@ declare module "fastify" {
 declare module "@fastify/jwt" {
   interface FastifyJWT {
     user: {
-      id: string;
+      userId: string;
+      studentId: string;
+      collegeId: string;
       email: string;
       name: string;
     }
@@ -51,6 +54,8 @@ const buildServer = async () => {
   );
 
   server.register(userRoutes, { prefix: 'api/users' });
+
+  server.register(userCollegeRoutes, { prefix: 'api/usercolleges' });
 
   try {
     await server.listen({
