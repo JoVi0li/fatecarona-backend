@@ -14,3 +14,5 @@ const courseRoutes = async (server: FastifyInstance) => {
 
 
 }
+
+export default courseRoutes;
