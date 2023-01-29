@@ -1,4 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
+import { getCourse } from "../course/course.service";
 import { CreateCollegeInput, UpdateCollegeNameInput } from "./college.schema";
 import { createCollege, deleteCollege, getAllColleges, getCollege, updateCollegeName } from "./college.service";
 
@@ -38,9 +39,19 @@ export const getCollegeHandler = async (
   req: FastifyRequest,
   res: FastifyReply,
 ) => {
-  const id = req.user.collegeId;
+  const id = req.user.courseId;
 
-  const college = await getCollege(id);
+  const course = await getCourse(id);
+
+  if(!course) {
+    return res.code(404).send({
+      success: false,
+      message: "Não foi possível encontrar sua faculdade",
+      data: null
+    });
+    }
+
+  const college = await getCollege(course!.collegeId);
 
   if(!college) {
     return res.code(404).send({
