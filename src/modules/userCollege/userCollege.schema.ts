@@ -5,7 +5,7 @@ const createUserCollegeSchema = z.object({
   userId: z.string({required_error: "O identificador do usuário é obrigatório"}),
   userDocumentsId: z.string({ required_error: "O identificador dos documentos do usuário é obrigatório" }),
   userValidationsId: z.string({required_error:"O identificador das validações do usuário é obrigatório"}),
-  collegeId: z.string({required_error:"O identificador da faculdade do usuário é obrigatório"})
+  courseId: z.string({required_error:"O identificador da faculdade do usuário é obrigatório"})
 });
 
 const updateUserCollegeRole = z.object({

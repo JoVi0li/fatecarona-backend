@@ -1,11 +1,10 @@
-import { FastifyReply, FastifyRequest } from "fastify";
-import { getCourse } from "../course/course.service";
-import { CreateCollegeInput, UpdateCollegeNameInput } from "./college.schema";
-import { createCollege, deleteCollege, getAllColleges, getCollege, updateCollegeName } from "./college.service";
+import { FastifyReply, FastifyRequest } from "fastify"
+import { CreateCourseInput, UpdateCourseInput } from "./course.schema"
+import { createCourse, deleteCourse, getAllCourses, getCourse, updateCourse } from "./course.service";
 
-export const createCollegeHandler = async (
-  req: FastifyRequest<{ Body: CreateCollegeInput }>,
-  res: FastifyReply,
+export const createCourseHandler = async (
+  req: FastifyRequest<{ Body: CreateCourseInput }>,
+  res: FastifyReply
 ) => {
   const body = req.body;
   const role = req.user.role;
@@ -19,39 +18,29 @@ export const createCollegeHandler = async (
   }
 
   try {
-    const college = await createCollege(body);
+    const course = await createCourse(body);
     
     return res.code(201).send({
       success: true,
-      message: "Faculdade criado com sucesso",
-      data: college.id,
+      message: "Curso criado com sucesso",
+      data: course.id,
     });
   } catch (error) {
     return res.send({
       success: false,
-      message: "Não foi possível criar a faculdade",
+      message: "Não foi possível criar o curso",
       error: error,
     });
   }
-};
+}
 
-export const getCollegeHandler = async (
+export const getCourseHandler = async (
   req: FastifyRequest,
-  res: FastifyReply,
+  res: FastifyReply
 ) => {
   const id = req.user.courseId;
 
-  const course = await getCourse(id);
-
-  if(!course) {
-    return res.code(404).send({
-      success: false,
-      message: "Não foi possível encontrar sua faculdade",
-      data: null
-    });
-    }
-
-  const college = await getCollege(course!.collegeId);
+  const college = await getCourse(id);
 
   if(!college) {
     return res.code(404).send({
@@ -66,24 +55,24 @@ export const getCollegeHandler = async (
     message: "Faculdade encontrada",
     data: college
   });
-};
+}
 
-export const getAllCollegesHandler = async (
+export const getAllCoursesHandler = async (
   req: FastifyRequest,
-  res: FastifyReply,
+  res: FastifyReply
 ) => {
-  const colleges = await getAllColleges();
+  const courses = await getAllCourses();
 
   return res.code(200).send({
     success: true,
-    message: "Faculdades encontradas",
-    data: colleges,
+    message: "Cursos encontrados",
+    data: courses,
   });
 }
 
-export const deleteCollegeHandler = async (
+export const deleteCourseHandler = async (
   req: FastifyRequest<{ Params: { id: string } }>,
-  res: FastifyReply,
+  res: FastifyReply
 ) => {
   const id = req.params.id;
   const role = req.user.role;
@@ -96,26 +85,26 @@ export const deleteCollegeHandler = async (
     });
   }
 
-  const college = await deleteCollege(id);
+  const course = await deleteCourse(id);
 
-  if(!college) {
+  if(!course) {
     return res.code(500).send({
       success: false,
-      message: "Não foi possível excluir a faculdade",
+      message: "Não foi possível excluir o curso",
       data: null,
     });
   }
 
   return res.code(200).send({
     success: false,
-    message: "Faculdade removida com sucesso",
+    message: "Curso removido com sucesso",
     data: null
   });
-};
+}
 
-export const updateCollegeHandler = async (
-  req: FastifyRequest<{ Body: UpdateCollegeNameInput, Params: { id: string } }>,
-  res: FastifyReply,
+export const updateCourseHandler = async (
+  req: FastifyRequest<{ Body: UpdateCourseInput, Params: { id: string } }>,
+  res: FastifyReply
 ) => {
   const body = req.body;
   const id = req.params.id;
@@ -129,18 +118,28 @@ export const updateCollegeHandler = async (
     });
   }
 
+  const oldCourse = await getCourse(id);
+
+  if(!oldCourse) {
+    return res.code(500).send({
+      success: false,
+      message: "Curso não encontrado",
+      error: null,
+    });
+  }
+
   try {
-    const collegeUpdated = await updateCollegeName(id, body);
+    const collegeUpdated = await updateCourse(id, body, oldCourse);
     return res.code(200).send({
       success: true,
-      message: "Faculdade atualizada com sucesso",
+      message: "Courso atualizado com sucesso",
       data: collegeUpdated,
     });
   } catch (error) {
     return res.code(500).send({
       success: false,
-      message: "Nao foi possível atualizar a faculdade",
+      message: "Nao foi possível atualizar o curso",
       error: error,
     });
   }
-};
+}

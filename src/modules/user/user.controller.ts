@@ -51,7 +51,7 @@ export const signinHandler = async (
   const token = req.jwt.sign({
     userId: user.id,
     studentId: user.userCollege!.id,
-    collegeId: user.userCollege!.collegeId,
+    courseId: user.userCollege!.courseId,
     name: user.name,
     email: user.email,
     role: user.userCollege!.role,
