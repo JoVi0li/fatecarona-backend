@@ -19,7 +19,7 @@ export const createUserDocumentsHandler = async (
   } catch (error) {
     return res.send({
       success: false,
-      message: "Não foi possível criar o estudante",
+      message: "Não foi possível criar os documentos do usuário",
       error: error,
     });
   }
