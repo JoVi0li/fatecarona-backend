@@ -21,6 +21,17 @@ export const findUserCollegeById = async(id: string) => {
   })
 };
 
+export const findEventsWhereIAmParticipant = async (id: string) => {
+  return await prisma.userCollege.findMany({
+    where: {
+      id: id
+    },
+    select: {
+      participantEvents: true
+    },
+  })
+}
+
 export const deleteUserCollegeById = async(id: string) => {
   return await prisma.userCollege.delete({
     where: {

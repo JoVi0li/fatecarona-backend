@@ -38,8 +38,8 @@ model UserValidations {
 }
 
 model College {
-  id           String        @id @default(uuid())
-  name         String        @unique
+  id           String   @id @default(uuid())
+  name         String   @unique
   localization String[]
   courses      Course[]
   events       Event[]
@@ -66,19 +66,29 @@ model UserCollege {
   userValidationsId String          @unique
   courseId          String
   ownerEvents       Event[]         @relation(name: "event-owner")
-  participantEvents Event[]         @relation(name: "event-participant")
+  participantEvents Participant[]
 }
 
 model Event {
   id           String        @id @default(uuid())
   owner        UserCollege   @relation(fields: [ownerId], references: [id], name: "event-owner")
-  participants UserCollege[] @relation(name: "event-participant")
-  aPoint       College       @relation(fields: [collegeId], references: [id])
+  aPoint       College       @relation(fields: [aPointId], references: [id])
   bPoint       String[]
-  collegeId    String
+  aPointId     String
   ownerId      String
-  status       EventStatus
+  status       EventStatus   @default(CREATED)
   createdAt    DateTime      @default(now())
+  participants Participant[]
+  fromTo       FromTo
+}
+
+model Participant {
+  id            String      @id @default(uuid())
+  event         Event       @relation(fields: [eventId], references: [id])
+  student       UserCollege @relation(fields: [userCollegeId], references: [id])
+  createdAt     DateTime    @default(now())
+  eventId       String
+  userCollegeId String
 }
 
 enum Gender {
@@ -101,4 +111,9 @@ enum EventStatus {
 enum UserRoles {
   NORMAL
   ADMIN
+}
+
+enum FromTo {
+  FROM_A_TO_B
+  FROM_B_TO_A
 }
