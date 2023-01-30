@@ -32,7 +32,7 @@ declare module "@fastify/jwt" {
 }
 
 const buildServer = async () => {
-  const server = fastify();
+  const server = fastify({logger: true});
 
   server.register(fjwt, {
     secret: String(process.env.JWT_SECRET)

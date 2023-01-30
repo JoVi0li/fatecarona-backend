@@ -5,7 +5,9 @@
   "repository": "https://github.com/JoVi0li/fatecarona-backend.git",
   "author": "João Vitor <jovioli.dev04@gmail.com>",
   "scripts": {
-    "dev": "tsnd --respawn --transpile-only --exit-child src/app.ts"
+    "dev": "tsnd --respawn --transpile-only --exit-child src/app.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node build/app.js"
   },
   "dependencies": {
     "@fastify/jwt": "5.0.0",
