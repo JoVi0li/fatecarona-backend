@@ -7,6 +7,7 @@ import { courseRoutes } from "./modules/course";
 import { userDocumentsRoutes } from "./modules/userDocuments";
 import { userValidationsRoutes } from "./modules/userValidations";
 import { eventRoutes } from "./modules/event";
+import { participantRoutes } from "./modules/participant";
 
 declare module "fastify" {
   export interface FastifyRequest {
@@ -72,6 +73,8 @@ const buildServer = async () => {
   server.register(userValidationsRoutes, {prefix: 'api/uservalidations'});
 
   server.register(eventRoutes, { prefix: 'api/events' });
+
+  server.register(participantRoutes, { prefix: 'api/participant' });
 
   try {
     await server.listen({
