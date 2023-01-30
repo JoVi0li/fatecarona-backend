@@ -79,6 +79,7 @@ model Event {
   status       EventStatus   @default(CREATED)
   createdAt    DateTime      @default(now())
   participants Participant[]
+  fromTo       FromTo
 }
 
 model Participant {
@@ -110,4 +111,9 @@ enum EventStatus {
 enum UserRoles {
   NORMAL
   ADMIN
+}
+
+enum FromTo {
+  FROM_A_TO_B
+  FROM_B_TO_A
 }

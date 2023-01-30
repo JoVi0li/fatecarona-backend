@@ -1,14 +1,9 @@
-import { Participant } from "@prisma/client";
 import { prisma } from "../../utils/prisma";
 import { CreateEventInput, UpdateEventStatusInput } from "./event.schema";
 
 export const createEvent = async (body: CreateEventInput) => {
   return await prisma.event.create({
-    data: {
-      ownerId: body.ownerId,
-      aPointId: body.aPointId,
-      bPoint: body.bPoint,
-    }
+    data: body
   });
 }
 
@@ -20,6 +15,23 @@ export const deleteEvent = async (id: string) => {
   });
 }
 
+export const getActiveEvents = async () => {
+  return await prisma.event.findMany({
+    where: {
+      status: "WAITING_PARTICIPANTS"
+    }
+  });
+}
+
+export const getEventsWhereIAmOwner = async (userCollegeId: string) => {
+  return await prisma.event.findMany({
+    where: {
+      ownerId: userCollegeId,
+      
+    }
+  })
+}
+
 export const updateEventStatus = async (id: string, newStatus: UpdateEventStatusInput) => {
   return await prisma.event.update({
     where: {
@@ -29,8 +41,4 @@ export const updateEventStatus = async (id: string, newStatus: UpdateEventStatus
       status: newStatus.eventStatus
     }
   });
-}
-
-export const updateEventParticipants = async (id: string, newParticipants: Array<Participant>) => {
-
 }
