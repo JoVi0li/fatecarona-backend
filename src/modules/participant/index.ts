@@ -1,0 +1,1 @@
+export { default as participantRoutes } from "./participant.route";

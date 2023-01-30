@@ -19,6 +19,20 @@ export const getActiveEvents = async () => {
   return await prisma.event.findMany({
     where: {
       status: "WAITING_PARTICIPANTS"
+    },
+    select: {
+      id: true,
+      owner: true,
+      aPoint: true,
+      bPoint: true,
+      status: true,
+      createdAt: true,
+      fromTo: true,
+      participants: {
+        where: {
+          active: true
+        }
+      }
     }
   });
 }

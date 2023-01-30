@@ -89,6 +89,7 @@ model Participant {
   createdAt     DateTime    @default(now())
   eventId       String
   userCollegeId String
+  active        Boolean     @default(true)
 }
 
 enum Gender {
