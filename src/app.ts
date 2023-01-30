@@ -78,10 +78,8 @@ const buildServer = async () => {
 
   try {
     await server.listen({
-      port: 3000,
-
+      port: Number(process.env.PORT),
     });
-    console.log("Server running at http://localhost:3000")
   } catch (error) {
     console.error(error);
     process.exit(1);
