@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { createCollegeHandler, deleteCollegeHandler, getAllCollegesHandler, getCollegeHandler, updateCollegeHandler } from "./college.controller";
 
-const collegeRoutes = async(server: FastifyInstance) => {
+const collegeRoutes = async (server: FastifyInstance) => {
 
   server.post('/', { preHandler: [server.auth] }, createCollegeHandler);
 

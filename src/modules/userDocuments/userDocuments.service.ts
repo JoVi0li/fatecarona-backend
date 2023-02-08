@@ -1,10 +1,17 @@
 import { UserDocuments } from "@prisma/client";
 import { prisma } from "../../utils/prisma";
-import { CreateUserDocumentsInput, UpdateUserDocumentsInput } from "./userDocuments.schema";
+import { CreateUserDocumentsDatabase, UpdateUserDocumentsDatabase, } from "./userDocuments.schema";
 
-export const createUserDocuments = async (input: CreateUserDocumentsInput) => {
+export const createUserDocuments = async (input: CreateUserDocumentsDatabase) => {
   const userDocuments = await prisma.userDocuments.create({
-    data: input
+    data: {
+      docPhotoBackUrl: input.docPhotoBackUrl,
+      docPhotoFrontUrl: input.docPhotoFrontUrl,
+      collegeDocUrl: input.collegeDocUrl,
+      docPhotoBackKey: input.docPhotoBackKey,
+      docPhotoFrontKey: input.docPhotoFrontKey,
+      collegeDocKey: input.collegeDocKey
+    }
   });
 
   return userDocuments;
@@ -29,13 +36,13 @@ export const deleteUserDocumentsById = async (id: string) => {
   });
 }
 
-export const updateUserDocuments = async(id: string, newDocs: UpdateUserDocumentsInput, oldDocs: UserDocuments) => {
+export const updateUserDocuments = async(id: string, newDocs: UpdateUserDocumentsDatabase, oldDocs: UserDocuments) => {
   return await prisma.userDocuments.update({
     where: {
       id: id
     },
     data: {
-      docPhotoBackUrl: newDocs.docPhotoBackUrl ?? oldDocs.docPhotoBackUrl,
+      docPhotoBackUrl: newDocs.docPhotoBackUrl?? oldDocs.docPhotoBackUrl,
       docPhotoFrontUrl: newDocs.docPhotoFrontUrl ?? oldDocs.docPhotoFrontUrl,
       collegeDocUrl: newDocs.collegeDocUrl ?? oldDocs.collegeDocUrl
     },

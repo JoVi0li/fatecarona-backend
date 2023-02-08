@@ -2,15 +2,23 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { CreateUserInput, SigninUserInput, UpdateUserInput } from "./user.schema";
 import { createUser, deleteUserById, findUserById, findUserByEmail, updateUser } from "./user.service";
 import bcrypt from "bcrypt";
+import { base64Converter } from "../../utils";
+import { useUpload } from "../../shared/services";
 
 export const createUserHandler = async (
   req: FastifyRequest<{ Body: CreateUserInput }>,
   res: FastifyReply,
 ) => {
-  const body = req.body;
+  const { photo, ...rest } = req.body;
+
+  const { uploadFile } = useUpload();
+  const { fromBase64 } = base64Converter();
+
 
   try {
-    const user = await createUser(body);
+    const photoFile = fromBase64(photo, "file");
+    const { Location: photoUrl } = await uploadFile(rest.email, "photos", photoFile);
+    const user = await createUser({photo: photoUrl, ...rest});
     return res.code(201).send({
       success: true,
       message: "Usuário criado com sucesso",

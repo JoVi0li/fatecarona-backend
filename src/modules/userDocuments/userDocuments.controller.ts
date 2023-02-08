@@ -2,6 +2,9 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { findUserCollegeById } from "../userCollege/userCollege.service";
 import { CreateUserDocumentsInput, UpdateUserDocumentsInput } from "./userDocuments.schema";
 import { createUserDocuments, deleteUserDocumentsById, getUserDocumentsById, updateUserDocuments } from "./userDocuments.service";
+import { useUpload } from "../../shared/services";
+import { base64Converter } from "../../utils";
+import { randomUUID } from "crypto";
 
 export const createUserDocumentsHandler = async (
   req: FastifyRequest<{ Body: CreateUserDocumentsInput }>,
@@ -9,8 +12,28 @@ export const createUserDocumentsHandler = async (
 ) => {
   const body = req.body;
 
+  const { uploadFile } = useUpload();
+  const { fromBase64 } = base64Converter();
+  const { docPhotoBack, docPhotoFront, collegeDoc } = body;
+
   try {
-    const userDocuments = await createUserDocuments(body);
+    const docPhotoBackFile = fromBase64(docPhotoBack, "file");
+    const docPhotoFrontFile = fromBase64(docPhotoFront, "file");
+    const collegeDocFile = fromBase64(collegeDoc, "file");
+
+    const { Location: docPhotoBackUrl, Key: docPhotoBackKey } = await uploadFile(randomUUID(), "documents", docPhotoBackFile);
+    const { Location: docPhotoFrontUrl, Key: docPhotoFrontKey } = await uploadFile(randomUUID(), "documents", docPhotoFrontFile);
+    const { Location: collegeDocUrl, Key: collegeDocKey } = await uploadFile(randomUUID(), "documents", collegeDocFile);
+
+    const userDocuments = await createUserDocuments({
+      docPhotoBackUrl: docPhotoBackUrl,
+      docPhotoFrontUrl: docPhotoFrontUrl,
+      collegeDocUrl: collegeDocUrl,
+      docPhotoBackKey: docPhotoBackKey,
+      docPhotoFrontKey: docPhotoFrontKey,
+      collegeDocKey: collegeDocKey
+    });
+
     return res.code(201).send({
       success: true,
       message: "Documentos do usuário criados com sucesso",
@@ -33,7 +56,7 @@ export const getUserDocumentsHandler = async (
 
   const student = await findUserCollegeById(id);
 
-  if(!student) {
+  if (!student) {
     return res.code(404).send({
       success: false,
       message: "Estudante não encontrado",
@@ -43,7 +66,7 @@ export const getUserDocumentsHandler = async (
 
   const documents = await getUserDocumentsById(student.userDocumentsId);
 
-  if(!documents) {
+  if (!documents) {
     return res.code(404).send({
       success: false,
       message: "Documentos não encontrados",
@@ -66,7 +89,7 @@ export const deleteUserDocumentsHandler = async (
 
   const student = await findUserCollegeById(id);
 
-  if(!student) {
+  if (!student) {
     return res.code(404).send({
       success: false,
       message: "Estudante não encontrado",
@@ -76,7 +99,7 @@ export const deleteUserDocumentsHandler = async (
 
   const documents = await deleteUserDocumentsById(student.userDocumentsId);
 
-  if(!documents) {
+  if (!documents) {
     return res.code(500).send({
       success: false,
       message: "Não foi possível excluir os documentos",
@@ -95,12 +118,11 @@ export const updateUserDocumentsHandler = async (
   req: FastifyRequest<{ Body: UpdateUserDocumentsInput }>,
   res: FastifyReply,
 ) => {
-  const newDocs = req.body;
   const id = req.user.studentId;
 
   const student = await findUserCollegeById(id);
 
-  if(!student) {
+  if (!student) {
     return res.code(404).send({
       success: false,
       message: "Estudante não encontrado",
@@ -110,7 +132,7 @@ export const updateUserDocumentsHandler = async (
 
   const oldDocs = await getUserDocumentsById(student.userDocumentsId);
 
-  if(!oldDocs) {
+  if (!oldDocs) {
     return res.code(404).send({
       success: false,
       message: "Documentos não encontrados",
@@ -118,8 +140,30 @@ export const updateUserDocumentsHandler = async (
     });
   }
 
+  const body = req.body;
+
+  const { uploadFile } = useUpload();
+  const { fromBase64 } = base64Converter();
+  const { docPhotoBack, docPhotoFront, collegeDoc } = body;
+
   try {
-    const documentsUpdated = await updateUserDocuments(id, newDocs, oldDocs);
+    const docPhotoBackFile = fromBase64(docPhotoBack ?? "", "file");
+    const docPhotoFrontFile = fromBase64(docPhotoFront ?? "", "file");
+    const collegeDocFile = fromBase64(collegeDoc ?? "", "file");
+
+    const { Location: docPhotoBackUrl } = await uploadFile(oldDocs.docPhotoBackKey, "documents", docPhotoBackFile);
+    const { Location: docPhotoFrontUrl } = await uploadFile(oldDocs.docPhotoFrontKey, "documents", docPhotoFrontFile);
+    const { Location: collegeDocUrl } = await uploadFile(oldDocs.collegeDocKey, "documents", collegeDocFile);
+
+    const documentsUpdated = await updateUserDocuments(
+      id,
+      {
+        docPhotoBackUrl: docPhotoBackUrl,
+        docPhotoFrontUrl: docPhotoFrontUrl,
+        collegeDocUrl: collegeDocUrl,
+      },
+      oldDocs
+    );
 
     return res.code(200).send({
       success: true,

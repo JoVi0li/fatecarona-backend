@@ -1,8 +1,8 @@
 import { FastifyInstance } from "fastify";
 import { createUserDocumentsHandler, deleteUserDocumentsHandler, getUserDocumentsHandler, updateUserDocumentsHandler } from "./userDocuments.controller";
 
-const userDocumentsRoutes = (server: FastifyInstance) => {
 
+const userDocumentsRoutes = async (server: FastifyInstance) => {
   server.post('/', createUserDocumentsHandler);
 
   server.get('/', { preHandler: [server.auth] }, getUserDocumentsHandler);

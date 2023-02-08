@@ -32,7 +32,7 @@ declare module "@fastify/jwt" {
 }
 
 const buildServer = async () => {
-  const server = fastify({logger: true});
+  const server = fastify({logger: true, bodyLimit: 30 * 1024 * 1024});
 
   server.register(fjwt, {
     secret: String(process.env.JWT_SECRET)
@@ -80,6 +80,7 @@ const buildServer = async () => {
     await server.listen({
       port: Number(process.env.PORT),
     });
+    console.log(process.env.PORT)
   } catch (error) {
     console.error(error);
     process.exit(1);
