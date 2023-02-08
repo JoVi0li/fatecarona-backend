@@ -25,6 +25,9 @@ model UserDocuments {
   docPhotoFrontUrl String
   docPhotoBackUrl  String
   collegeDocUrl    String
+  docPhotoFrontKey String       @unique
+  docPhotoBackKey  String       @unique
+  collegeDocKey    String       @unique
   userCollege      UserCollege?
 }
 

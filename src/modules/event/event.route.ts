@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { createEventHandler, getActiveEventsHandler, getEventsWhereIAmOwnerHandler, getEventsWhereIAmParticipantHandler } from "./event.controller";
 
-const eventRoutes = (server: FastifyInstance) => {
+const eventRoutes = async (server: FastifyInstance) => {
   server.post('/', { preHandler: [server.auth] }, createEventHandler);
 
   server.get('/', { preHandler: [server.auth] }, getActiveEventsHandler);

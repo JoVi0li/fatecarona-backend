@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { createUserValidationsHandler } from "./userValidations.controller";
 
-const userValidationsRoutes = (server: FastifyInstance) => {
+const userValidationsRoutes = async (server: FastifyInstance) => {
   server.post('/', createUserValidationsHandler);
 }
 
