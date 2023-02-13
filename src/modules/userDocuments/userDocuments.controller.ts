@@ -1,37 +1,32 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { findUserCollegeById } from "../userCollege/userCollege.service";
-import { CreateUserDocumentsInput, UpdateUserDocumentsInput } from "./userDocuments.schema";
-import { createUserDocuments, deleteUserDocumentsById, getUserDocumentsById, updateUserDocuments } from "./userDocuments.service";
+import { UpdateUserDocumentsInput } from "./userDocuments.schema";
+import { createUserDocuments, deleteUserDocumentsById, getUserDocumentsById } from "./userDocuments.service";
 import { useUpload } from "../../shared/services";
-import { base64Converter } from "../../utils";
-import { randomUUID } from "crypto";
 
 export const createUserDocumentsHandler = async (
-  req: FastifyRequest<{ Body: CreateUserDocumentsInput }>,
+  req: FastifyRequest,
   res: FastifyReply,
 ) => {
-  const body = req.body;
 
-  const { uploadFile } = useUpload();
-  const { fromBase64 } = base64Converter();
-  const { docPhotoBack, docPhotoFront, collegeDoc } = body;
+  const { uploadMultipleFiles } = useUpload();
+
+  const files = req.files();
 
   try {
-    const docPhotoBackFile = fromBase64(docPhotoBack, "file");
-    const docPhotoFrontFile = fromBase64(docPhotoFront, "file");
-    const collegeDocFile = fromBase64(collegeDoc, "file");
+    const uploadedFiles = await uploadMultipleFiles(files, "documents");
 
-    const { Location: docPhotoBackUrl, Key: docPhotoBackKey } = await uploadFile(randomUUID(), "documents", docPhotoBackFile);
-    const { Location: docPhotoFrontUrl, Key: docPhotoFrontKey } = await uploadFile(randomUUID(), "documents", docPhotoFrontFile);
-    const { Location: collegeDocUrl, Key: collegeDocKey } = await uploadFile(randomUUID(), "documents", collegeDocFile);
+    const docPhotoBack = uploadedFiles.find(value => value.fileName == "docPhotoBack")!;
+    const docPhotoFront = uploadedFiles.find(value => value.fileName == "docPhotoFront")!;
+    const collegeDocPhoto = uploadedFiles.find(value => value.fileName == "collegeDocPhoto")!;
 
     const userDocuments = await createUserDocuments({
-      docPhotoBackUrl: docPhotoBackUrl,
-      docPhotoFrontUrl: docPhotoFrontUrl,
-      collegeDocUrl: collegeDocUrl,
-      docPhotoBackKey: docPhotoBackKey,
-      docPhotoFrontKey: docPhotoFrontKey,
-      collegeDocKey: collegeDocKey
+      docPhotoBackUrl: docPhotoBack.file.Location,
+      docPhotoFrontUrl: docPhotoFront.file.Location,
+      collegeDocUrl: collegeDocPhoto.file.Location,
+      docPhotoBackKey: docPhotoBack.file.Key,
+      docPhotoFrontKey: docPhotoFront.file.Key,
+      collegeDocKey: collegeDocPhoto.file.Key
     });
 
     return res.code(201).send({
@@ -140,35 +135,35 @@ export const updateUserDocumentsHandler = async (
     });
   }
 
-  const body = req.body;
+  // const body = req.body;
 
-  const { uploadFile } = useUpload();
-  const { fromBase64 } = base64Converter();
-  const { docPhotoBack, docPhotoFront, collegeDoc } = body;
+  // const { uploadFile } = useUpload();
+  // const { fromBase64 } = base64Converter();
+  // const { docPhotoBack, docPhotoFront, collegeDoc } = body;
 
   try {
-    const docPhotoBackFile = fromBase64(docPhotoBack ?? "", "file");
-    const docPhotoFrontFile = fromBase64(docPhotoFront ?? "", "file");
-    const collegeDocFile = fromBase64(collegeDoc ?? "", "file");
+    // const docPhotoBackFile = fromBase64(docPhotoBack ?? "", "file");
+    // const docPhotoFrontFile = fromBase64(docPhotoFront ?? "", "file");
+    // const collegeDocFile = fromBase64(collegeDoc ?? "", "file");
 
-    const { Location: docPhotoBackUrl } = await uploadFile(oldDocs.docPhotoBackKey, "documents", docPhotoBackFile);
-    const { Location: docPhotoFrontUrl } = await uploadFile(oldDocs.docPhotoFrontKey, "documents", docPhotoFrontFile);
-    const { Location: collegeDocUrl } = await uploadFile(oldDocs.collegeDocKey, "documents", collegeDocFile);
+    // const { Location: docPhotoBackUrl } = await uploadFile(oldDocs.docPhotoBackKey, "documents", docPhotoBackFile);
+    // const { Location: docPhotoFrontUrl } = await uploadFile(oldDocs.docPhotoFrontKey, "documents", docPhotoFrontFile);
+    // const { Location: collegeDocUrl } = await uploadFile(oldDocs.collegeDocKey, "documents", collegeDocFile);
 
-    const documentsUpdated = await updateUserDocuments(
-      id,
-      {
-        docPhotoBackUrl: docPhotoBackUrl,
-        docPhotoFrontUrl: docPhotoFrontUrl,
-        collegeDocUrl: collegeDocUrl,
-      },
-      oldDocs
-    );
+    // const documentsUpdated = await updateUserDocuments(
+    //   id,
+    //   {
+    //     docPhotoBackUrl: docPhotoBackUrl,
+    //     docPhotoFrontUrl: docPhotoFrontUrl,
+    //     collegeDocUrl: collegeDocUrl,
+    //   },
+    //   oldDocs
+    // );
 
     return res.code(200).send({
       success: true,
       message: "Documentos atualizados com sucesso",
-      data: documentsUpdated,
+      // data: documentsUpdated,
     });
   } catch (error) {
     return res.code(500).send({
