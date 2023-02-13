@@ -3,7 +3,7 @@ import { createUserDocumentsHandler, deleteUserDocumentsHandler, getUserDocument
 
 
 const userDocumentsRoutes = async (server: FastifyInstance) => {
-  server.post('/', createUserDocumentsHandler);
+  server.post(':userId', createUserDocumentsHandler);
 
   server.get('/', { preHandler: [server.auth] }, getUserDocumentsHandler);
 

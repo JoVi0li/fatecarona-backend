@@ -1,5 +1,6 @@
 import fastify, { FastifyReply, FastifyRequest } from "fastify";
 import fjwt, { JWT } from "@fastify/jwt";
+import multipart from "@fastify/multipart";
 import { userRoutes } from "./modules/user";
 import { userCollegeRoutes } from "./modules/userCollege";
 import { collegeRoutes } from "./modules/college";
@@ -37,6 +38,8 @@ const buildServer = async () => {
   server.register(fjwt, {
     secret: String(process.env.JWT_SECRET)
   });
+
+  server.register(multipart);
 
   server.decorate(
     "auth",
