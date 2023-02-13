@@ -1,38 +1,48 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { findUserCollegeById } from "../userCollege/userCollege.service";
-import { UpdateUserDocumentsInput } from "./userDocuments.schema";
-import { createUserDocuments, deleteUserDocumentsById, getUserDocumentsById } from "./userDocuments.service";
+import { CreateUserDocumentInput, DeleteUserDocumentSchema, UpdateUserDocumentsInput } from "./userDocuments.schema";
+import { createUserDocuments, deleteUserDocumentsById, getUserDocumentsById, updateUserDocuments } from "./userDocuments.service";
 import { useUpload } from "../../shared/services";
+import { getUserCollegeHandler } from "../userCollege/userCollege.controller";
 
 export const createUserDocumentsHandler = async (
-  req: FastifyRequest,
+  req: FastifyRequest<{ Body: CreateUserDocumentInput }>,
   res: FastifyReply,
 ) => {
+  const body = req.body;
+  const id = body.userCollegeId
+  const files = req.files();
+
+  const userCollege = findUserCollegeById(id);
+
+  if (!userCollege) {
+    return res.send({
+      success: false,
+      message: "Estudante inválidos",
+      error: null,
+    });
+  }
 
   const { uploadMultipleFiles } = useUpload();
-
-  const files = req.files();
 
   try {
     const uploadedFiles = await uploadMultipleFiles(files, "documents");
 
-    const docPhotoBack = uploadedFiles.find(value => value.fileName == "docPhotoBack")!;
-    const docPhotoFront = uploadedFiles.find(value => value.fileName == "docPhotoFront")!;
-    const collegeDocPhoto = uploadedFiles.find(value => value.fileName == "collegeDocPhoto")!;
+    const result: string[] = [];
 
-    const userDocuments = await createUserDocuments({
-      docPhotoBackUrl: docPhotoBack.file.Location,
-      docPhotoFrontUrl: docPhotoFront.file.Location,
-      collegeDocUrl: collegeDocPhoto.file.Location,
-      docPhotoBackKey: docPhotoBack.file.Key,
-      docPhotoFrontKey: docPhotoFront.file.Key,
-      collegeDocKey: collegeDocPhoto.file.Key
-    });
+    for await (const file of uploadedFiles) {
+      const document = await createUserDocuments({
+        userCollegeId: id,
+        url: file.file.Location,
+        key: file.file.Key,
+      })
+      result.push(document.id);
+    }
 
     return res.code(201).send({
       success: true,
       message: "Documentos do usuário criados com sucesso",
-      data: userDocuments.id,
+      data: result
     });
   } catch (error) {
     return res.send({
@@ -59,7 +69,7 @@ export const getUserDocumentsHandler = async (
     });
   }
 
-  const documents = await getUserDocumentsById(student.userDocumentsId);
+  const documents = await getUserDocumentsById(student.id);
 
   if (!documents) {
     return res.code(404).send({
@@ -77,12 +87,13 @@ export const getUserDocumentsHandler = async (
 };
 
 export const deleteUserDocumentsHandler = async (
-  req: FastifyRequest,
+  req: FastifyRequest<{ Body: DeleteUserDocumentSchema }>,
   res: FastifyReply,
 ) => {
-  const id = req.user.studentId;
+  const studentId = req.user.studentId;
+  const documentId = req.body.documentId;
 
-  const student = await findUserCollegeById(id);
+  const student = await findUserCollegeById(studentId);
 
   if (!student) {
     return res.code(404).send({
@@ -92,7 +103,25 @@ export const deleteUserDocumentsHandler = async (
     });
   }
 
-  const documents = await deleteUserDocumentsById(student.userDocumentsId);
+  const document = await getUserDocumentsById(documentId);
+
+  if (!document) {
+    return res.code(404).send({
+      success: false,
+      message: "Documento não encontrado",
+      data: null
+    });
+  }
+
+  if (document.userCollegeId !== student.id) {
+    return res.code(400).send({
+      success: false,
+      message: "Você não tem permissão para realizar essa operação",
+      data: null
+    });
+  }
+
+  const documents = await deleteUserDocumentsById(document.id);
 
   if (!documents) {
     return res.code(500).send({
@@ -114,6 +143,10 @@ export const updateUserDocumentsHandler = async (
   res: FastifyReply,
 ) => {
   const id = req.user.studentId;
+  const userDocumentId = req.body.userDocumentId;
+  const file = await req.file();
+
+  const { uploadFile } = useUpload();
 
   const student = await findUserCollegeById(id);
 
@@ -125,7 +158,7 @@ export const updateUserDocumentsHandler = async (
     });
   }
 
-  const oldDocs = await getUserDocumentsById(student.userDocumentsId);
+  const oldDocs = await getUserDocumentsById(userDocumentId);
 
   if (!oldDocs) {
     return res.code(404).send({
@@ -135,40 +168,34 @@ export const updateUserDocumentsHandler = async (
     });
   }
 
-  // const body = req.body;
-
-  // const { uploadFile } = useUpload();
-  // const { fromBase64 } = base64Converter();
-  // const { docPhotoBack, docPhotoFront, collegeDoc } = body;
+  if (oldDocs.userCollegeId !== student.id) {
+    return res.code(400).send({
+      success: false,
+      message: "Você não tem permissão para realizar essa operação",
+      data: null
+    });
+  }
 
   try {
-    // const docPhotoBackFile = fromBase64(docPhotoBack ?? "", "file");
-    // const docPhotoFrontFile = fromBase64(docPhotoFront ?? "", "file");
-    // const collegeDocFile = fromBase64(collegeDoc ?? "", "file");
-
-    // const { Location: docPhotoBackUrl } = await uploadFile(oldDocs.docPhotoBackKey, "documents", docPhotoBackFile);
-    // const { Location: docPhotoFrontUrl } = await uploadFile(oldDocs.docPhotoFrontKey, "documents", docPhotoFrontFile);
-    // const { Location: collegeDocUrl } = await uploadFile(oldDocs.collegeDocKey, "documents", collegeDocFile);
-
-    // const documentsUpdated = await updateUserDocuments(
-    //   id,
-    //   {
-    //     docPhotoBackUrl: docPhotoBackUrl,
-    //     docPhotoFrontUrl: docPhotoFrontUrl,
-    //     collegeDocUrl: collegeDocUrl,
-    //   },
-    //   oldDocs
-    // );
-
+    const fileUploaded = await uploadFile(file, "documents");
+    const userDocument = await updateUserDocuments(
+      oldDocs.id,
+      {
+        url: fileUploaded.file.Location,
+        key: fileUploaded.file.Key,
+        isValid: null
+      },
+      oldDocs
+    );
     return res.code(200).send({
       success: true,
-      message: "Documentos atualizados com sucesso",
-      // data: documentsUpdated,
+      message: "Documento atualizado com sucesso",
+      data: userDocument.id,
     });
   } catch (error) {
     return res.code(500).send({
       success: false,
-      message: "Nao foi possível atualizar os documentos",
+      message: "Nao foi possível atualizar o documento",
       error: error,
     });
   }

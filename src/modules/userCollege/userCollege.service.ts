@@ -15,8 +15,7 @@ export const findUserCollegeById = async(id: string) => {
       id: id
     },
     include: {
-      documents: true,
-      validations: true,
+      userDocument: true,
     }
   })
 };
@@ -49,8 +48,7 @@ export const updateUserCollegeRole = async(id: string, newRole: UpdateUserColleg
       role: newRole.role
     },
     include: {
-      documents: true,
-      validations: true
+      userDocument: true,
     }
   })
 }

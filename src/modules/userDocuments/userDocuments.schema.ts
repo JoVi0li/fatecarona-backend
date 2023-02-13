@@ -1,34 +1,31 @@
 import { z } from "zod";
 
-const createUserDocumentsSchema = z.object({
-  docPhotoFront: z.string({ required_error: "Documento obrigatório" }),
-  docPhotoBack: z.string({ required_error: "Documento obrigatório" }),
-  collegeDoc: z.string({ required_error: "Documento obrigatório" }),
+const createUserDocumentSchema = z.object({
+  userCollegeId: z.string({ required_error: "O identificador do estudante é obrigatório" }),
 });
 
-const createUserDocumentsDatabase = z.object({
-  docPhotoFrontUrl: z.string({ required_error: "Documento obrigatório" }),
-  docPhotoBackUrl: z.string({ required_error: "Documento obrigatório" }),
-  collegeDocUrl: z.string({ required_error: "Documento obrigatório" }),
-  docPhotoFrontKey: z.string({ required_error: "Chave obrigatória" }),
-  docPhotoBackKey: z.string({ required_error: "Chave obrigatória" }),
-  collegeDocKey: z.string({ required_error: "Chave obrigatória" }),
+const createUserDocumentDatabase = z.object({
+  userCollegeId: z.string({ required_error: "O identificador do estudante é obrigatório" }),
+  url: z.string({ required_error: "Url documento obrigatório" }),
+  key: z.string({ required_error: "Chave documento obrigatório" }),
 });
 
-const updateUserDocumentsSchema = z.object({
-  docPhotoFront: z.string().nullable(),
-  docPhotoBack: z.string().nullable(),
-  collegeDoc: z.string().nullable(),
+const updateUserDocumentSchema = z.object({
+  userDocumentId: z.string({ required_error: "O identificador do estudante é obrigatório" }),
 });
 
-const updateUserDocumentsDatabase = z.object({
-  docPhotoFrontUrl: z.string().nullable(),
-  docPhotoBackUrl: z.string().nullable(),
-  collegeDocUrl: z.string().nullable(),
+const updateUserDocumentDatabase = z.object({
+  url: z.string().nullable(),
+  key: z.string().nullable(),
+  isValid: z.boolean().nullable()
 });
 
+const deleteUserDocumentSchema = z.object({
+  documentId: z.string({ required_error: "O identificador do documento é obrigatório" })
+});
 
-export type CreateUserDocumentsInput = z.infer<typeof createUserDocumentsSchema>;
-export type CreateUserDocumentsDatabase = z.infer<typeof createUserDocumentsDatabase>;
-export type UpdateUserDocumentsInput = z.infer<typeof updateUserDocumentsSchema>;
-export type UpdateUserDocumentsDatabase = z.infer<typeof updateUserDocumentsDatabase>;
+export type CreateUserDocumentInput = z.infer<typeof createUserDocumentSchema>;
+export type CreateUserDocumentDatabase = z.infer<typeof createUserDocumentDatabase>;
+export type UpdateUserDocumentsInput = z.infer<typeof updateUserDocumentSchema>;
+export type UpdateUserDocumentsDatabase = z.infer<typeof updateUserDocumentDatabase>;
+export type DeleteUserDocumentSchema = z.infer<typeof deleteUserDocumentSchema>;

@@ -1,24 +1,17 @@
-import { UserDocuments } from "@prisma/client";
+import { UserDocument } from "@prisma/client";
 import { prisma } from "../../utils/prisma";
-import { CreateUserDocumentsDatabase, UpdateUserDocumentsDatabase, } from "./userDocuments.schema";
+import { CreateUserDocumentDatabase, UpdateUserDocumentsDatabase, } from "./userDocuments.schema";
 
-export const createUserDocuments = async (input: CreateUserDocumentsDatabase) => {
-  const userDocuments = await prisma.userDocuments.create({
-    data: {
-      docPhotoBackUrl: input.docPhotoBackUrl,
-      docPhotoFrontUrl: input.docPhotoFrontUrl,
-      collegeDocUrl: input.collegeDocUrl,
-      docPhotoBackKey: input.docPhotoBackKey,
-      docPhotoFrontKey: input.docPhotoFrontKey,
-      collegeDocKey: input.collegeDocKey
-    }
+export const createUserDocuments = async (input: CreateUserDocumentDatabase) => {
+  const userDocuments = await prisma.userDocument.create({
+    data: input
   });
 
   return userDocuments;
 }
 
 export const getUserDocumentsById = async (id: string) => {
-  return await prisma.userDocuments.findUnique({
+  return await prisma.userDocument.findUnique({
     where: {
       id: id
     },
@@ -29,22 +22,22 @@ export const getUserDocumentsById = async (id: string) => {
 }
 
 export const deleteUserDocumentsById = async (id: string) => {
-  return await prisma.userDocuments.delete({
+  return await prisma.userDocument.delete({
     where: {
       id: id
     },
   });
 }
 
-export const updateUserDocuments = async(id: string, newDocs: UpdateUserDocumentsDatabase, oldDocs: UserDocuments) => {
-  return await prisma.userDocuments.update({
+export const updateUserDocuments = async(id: string, newDocs: UpdateUserDocumentsDatabase, oldDocs: UserDocument) => {
+  return await prisma.userDocument.update({
     where: {
       id: id
     },
     data: {
-      docPhotoBackUrl: newDocs.docPhotoBackUrl?? oldDocs.docPhotoBackUrl,
-      docPhotoFrontUrl: newDocs.docPhotoFrontUrl ?? oldDocs.docPhotoFrontUrl,
-      collegeDocUrl: newDocs.collegeDocUrl ?? oldDocs.collegeDocUrl
+      url: newDocs.url ?? oldDocs.url,
+      key: newDocs.key ?? oldDocs.key,
+      isValid: newDocs.isValid ?? oldDocs.isValid,
     },
     include: {
       userCollege: true
