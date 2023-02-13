@@ -14,30 +14,32 @@ model User {
   name             String
   salt             String
   photo            String
+  photoKey         String       @unique
   phone            String
   identityDocument String       @unique
   gender           Gender
   userCollege      UserCollege?
 }
 
-model UserDocuments {
-  id               String       @id @default(uuid())
-  docPhotoFrontUrl String
-  docPhotoBackUrl  String
-  collegeDocUrl    String
-  docPhotoFrontKey String       @unique
-  docPhotoBackKey  String       @unique
-  collegeDocKey    String       @unique
-  userCollege      UserCollege?
+model UserCollege {
+  id                String         @id @default(uuid())
+  role              UserRoles      @default(NORMAL)
+  user              User           @relation(fields: [userId], references: [id])
+  course            Course         @relation(fields: [courseId], references: [id])
+  userId            String         @unique
+  courseId          String
+  ownerEvents       Event[]        @relation(name: "event-owner")
+  participantEvents Participant[]
+  userDocument      UserDocument[]
 }
 
-model UserValidations {
-  id                   String       @id @default(uuid())
-  isDocPhotoFrontValid Boolean
-  isDocPhotoBackValid  Boolean
-  isCollegeDocValid    Boolean
-  isEmailVerified      Boolean
-  userCollege          UserCollege?
+model UserDocument {
+  id            String      @id @default(uuid())
+  userCollegeId String
+  userCollege   UserCollege @relation(fields: [userCollegeId], references: [id])
+  url           String
+  key           String
+  isValid       Boolean     @default(false)
 }
 
 model College {
@@ -55,21 +57,6 @@ model Course {
   college     College       @relation(fields: [collegeId], references: [id])
   collegeId   String
   UserCollege UserCollege[]
-}
-
-model UserCollege {
-  id                String          @id @default(uuid())
-  role              UserRoles       @default(NORMAL)
-  user              User            @relation(fields: [userId], references: [id])
-  documents         UserDocuments   @relation(fields: [userDocumentsId], references: [id])
-  validations       UserValidations @relation(fields: [userValidationsId], references: [id])
-  course            Course          @relation(fields: [courseId], references: [id])
-  userId            String          @unique
-  userDocumentsId   String          @unique
-  userValidationsId String          @unique
-  courseId          String
-  ownerEvents       Event[]         @relation(name: "event-owner")
-  participantEvents Participant[]
 }
 
 model Event {
