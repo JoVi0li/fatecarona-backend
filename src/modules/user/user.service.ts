@@ -1,9 +1,9 @@
 import { prisma } from "../../utils/prisma";
-import { CreateUserInput, UpdateUserInput } from "./user.schema";
+import { CreateUserDatabase, UpdateUserDatabase, UpdateUserInput } from "./user.schema";
 import bcrypt from "bcrypt";
 import { User } from "@prisma/client";
 
-export const createUser = async (input: CreateUserInput) => {
+export const createUser = async (input: CreateUserDatabase) => {
   const { password, ...rest } = input;
 
   const salt = await bcrypt.genSalt(10);
@@ -43,7 +43,7 @@ export const deleteUserById = async (id: string) => {
   })
 }
 
-export const updateUser= async (newUser: UpdateUserInput, oldUser: User) => {
+export const updateUser= async (newUser: UpdateUserDatabase, oldUser: User) => {
   return await prisma.user.update({
     where: {
       id: oldUser.id
@@ -51,6 +51,7 @@ export const updateUser= async (newUser: UpdateUserInput, oldUser: User) => {
     data: {
       name: newUser.name ?? oldUser.name,
       photo: newUser.photo ?? oldUser.photo,
+      photoKey: newUser.photoKey ?? oldUser.photoKey,
       phone: newUser.phone ?? oldUser.phone,
       gender: newUser.gender ?? oldUser.gender,
     }
