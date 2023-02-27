@@ -4,8 +4,8 @@ const createUserCollegeSchema = z.object({
   role: z.enum(["NORMAL", "ADMIN"], { required_error: "A permissão do usuário é obrigatória" }),
   userId: z.string({required_error: "O identificador do usuário é obrigatório"}),
   userDocumentsId: z.string({ required_error: "O identificador dos documentos do usuário é obrigatório" }),
-  userValidationsId: z.string({required_error:"O identificador das validações do usuário é obrigatório"}),
-  courseId: z.string({required_error:"O identificador da faculdade do usuário é obrigatório"})
+  courseId: z.string({required_error:"O identificador da faculdade do usuário é obrigatório"}),
+  studentNumber: z.string({required_error: "O RA é obrigatório"})
 });
 
 const updateUserCollegeRole = z.object({

@@ -8,15 +8,14 @@ datasource db {
 }
 
 model User {
-  id               String       @id @default(uuid())
-  email            String       @unique
+  id               String        @id @default(uuid())
+  email            String        @unique
+  verifiedEmail    Boolean       @default(false)
   password         String
   name             String
   salt             String
-  photo            String
-  photoKey         String       @unique
   phone            String
-  identityDocument String       @unique
+  identityDocument String        @unique
   gender           Gender
   userCollege      UserCollege?
 }
@@ -28,18 +27,20 @@ model UserCollege {
   course            Course         @relation(fields: [courseId], references: [id])
   userId            String         @unique
   courseId          String
+  studentNumber     String         @unique
   ownerEvents       Event[]        @relation(name: "event-owner")
   participantEvents Participant[]
   userDocument      UserDocument[]
 }
 
 model UserDocument {
-  id            String      @id @default(uuid())
+  id            String           @id @default(uuid())
   userCollegeId String
-  userCollege   UserCollege @relation(fields: [userCollegeId], references: [id])
+  userCollege   UserCollege      @relation(fields: [userCollegeId], references: [id])
   url           String
   key           String
-  isValid       Boolean     @default(false)
+  isValid       Boolean          @default(false)
+  type          UserDocumentType
 }
 
 model College {
@@ -107,4 +108,11 @@ enum UserRoles {
 enum FromTo {
   FROM_A_TO_B
   FROM_B_TO_A
+}
+
+enum UserDocumentType {
+  IDENTITY_DOCUMENT_FRONT
+  IDENTITY_DOCUMENT_BACK
+  COLLEGE_DOCUMENT
+  PHOTO
 }

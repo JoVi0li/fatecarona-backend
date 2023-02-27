@@ -1,4 +1,4 @@
-import { prisma } from "../../utils/prisma"
+import { prisma } from "../../shared/utils/prisma"
 import { CreateParticipantInput } from "./participant.schema";
 
 export const createParticipant = async (input: CreateParticipantInput) => {
