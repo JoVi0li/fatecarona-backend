@@ -8,6 +8,7 @@ import { getUserDocumentsById, updateUserDocuments } from "../userDocuments";
 const emitter = new EventEmitter();
 
 emitter.on('validateUserPhoto', async (photo: UserDocument) => {
+  console.log("validateUserPhoto");
   const { getFile } = useS3();
 
   const file = await getFile(photo.key, "photos");
@@ -34,10 +35,14 @@ emitter.on('validateUserPhoto', async (photo: UserDocument) => {
     return emitter.emit("errorWhileUpdatePhoto");
   }
 
+  console.log("validateUserPhoto", "deu certo");
+
   return emitter.emit("validPhoto", userCollege.user.email);
 });
 
 emitter.on('validateUserDocumentFront', async (document: UserDocument) => {
+  console.log("validateUserDocumentFront");
+
   const { getFile } = useS3();
   const { readFile } = useOCR();
 
@@ -75,10 +80,15 @@ emitter.on('validateUserDocumentFront', async (document: UserDocument) => {
     return emitter.emit("validateUserDocumentFront", document);
   }
 
+  console.log("validateUserDocumentFront", "deu certo");
+
+
   return emitter.emit("validUserDocumentFront", userCollege.user.email);
 });
 
 emitter.on('validateUserDocumentBack', async (document: UserDocument) => {
+  console.log("validateUserDocumentBack");
+
   const { getFile } = useS3();
   const { readFile } = useOCR();
 
@@ -117,10 +127,15 @@ emitter.on('validateUserDocumentBack', async (document: UserDocument) => {
     return emitter.emit("validateUserDocumentFront", document);
   }
 
+  console.log("validateUserDocumentBack", "deu certo");
+
+
   return emitter.emit("validUserDocumentFront", userCollege.user.email);
 });
 
 emitter.on('validateCollegeDocument', async (document: UserDocument) => {
+  console.log("validateCollegeDocument");
+
   const { getFile } = useS3();
   const { readFile } = useOCR();
 
@@ -166,5 +181,10 @@ emitter.on('validateCollegeDocument', async (document: UserDocument) => {
     return emitter.emit("validateCollegeDocument", document);
   }
 
+  console.log("validateCollegeDocument", "deu certo");
+
   return emitter.emit("validCollegeDocument", userCollege.user.email);
 });
+
+
+export default emitter;

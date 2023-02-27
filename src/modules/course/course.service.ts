@@ -1,5 +1,5 @@
 import { Course } from "@prisma/client";
-import { prisma } from "../../utils/prisma";
+import { prisma } from "../../shared/utils/prisma";
 import { CreateCourseInput, UpdateCourseInput } from "./course.schema";
 
 export const createCourse = async (input: CreateCourseInput) => {

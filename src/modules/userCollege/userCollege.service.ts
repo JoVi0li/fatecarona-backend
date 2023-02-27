@@ -1,4 +1,4 @@
-import { prisma } from "../../utils/prisma";
+import { prisma } from "../../shared/utils/prisma";
 import { CreateUserCollegeInput, UpdateUserCollegeRole } from "./userCollege.schema";
 
 export const createUserCollege = async (input: CreateUserCollegeInput) => {

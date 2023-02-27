@@ -1,4 +1,4 @@
-import { prisma } from "../../utils/prisma";
+import { prisma } from "../../shared/utils/prisma";
 import { CreateUserDatabase, UpdateUserDatabase, UpdateUserInput } from "./user.schema";
 import bcrypt from "bcrypt";
 import { User } from "@prisma/client";

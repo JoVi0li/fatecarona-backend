@@ -2,14 +2,13 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { CreateUserInput, SigninUserInput, UpdateUserInput } from "./user.schema";
 import { createUser, deleteUserById, findUserById, findUserByEmail, updateUser } from "./user.service";
 import bcrypt from "bcrypt";
-import EventEmitter from "events";
+import { validateEmailEmitter as emitter } from "../validations";
 
 export const createUserHandler = async (
   req: FastifyRequest<{ Body: CreateUserInput }>,
   res: FastifyReply,
 ) => {
   const body = req.body;
-  const emitter = new EventEmitter();
 
   try {
     const user = await createUser(body);
@@ -17,20 +16,22 @@ export const createUserHandler = async (
     const token = req.jwt.sign(
       {
         userId: user.id,
-        studentId: user.userCollege!.id,
-        courseId: user.userCollege!.courseId,
         name: user.name,
         email: user.email,
-        role: user.userCollege!.role,
       },
       {
-        expiresIn: 60 * 24 * 7,
+        expiresIn: "1h",
         aud: "Fatecarona",
 
       },
     );
 
-    emitter.emit("verifyEmail", user);
+    emitter.emit("verifyEmail", user, token);
+
+    const hasListeners = emitter.emit("verifyEmail")
+    console.log({hasListeners})
+
+    console.log({token})
 
     return res.code(201).send({
       success: true,
@@ -38,6 +39,8 @@ export const createUserHandler = async (
       data: token,
     })
   } catch (error) {
+    console.log({error})
+
     return res.send({
       success: false,
       message: "Nao foi possível criar o usuário",

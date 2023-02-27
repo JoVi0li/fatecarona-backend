@@ -1,25 +1,16 @@
 import { User } from "@prisma/client";
 import { EventEmitter } from "events";
 import nodemailer from "nodemailer";
-import fastify from "fastify";
 
 const emitter = new EventEmitter();
 
-emitter.on("verifyEmail", (user: User) => {
+emitter.on("verifyEmail", (user: User, token: string) => {
+  console.log("verifyEmail");
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: "jovioli.dev04@gmail.com",
-      pass: "jovioli318940"
+      user: "akatavagreen@22jharots.com",
     }
-  });
-
-  const token = fastify().jwt.sign({
-    email: user.email,
-    name: user.name,
-    userId: user.id,
-  }, {
-    expiresIn: "10min",
   });
 
   const mailConfiguration = {
@@ -39,9 +30,12 @@ emitter.on("verifyEmail", (user: User) => {
   };
 
   transporter.sendMail(mailConfiguration, (err, msg) => {
-    if(err){
-      console.log({err})
+    if (err) {
+      console.log({ err })
       return emitter.emit("errorOnEmailValidation", err);
     }
   })
+  console.log("verifyEmail", "deu certo");
 });
+
+export default emitter;

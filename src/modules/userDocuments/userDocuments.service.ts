@@ -1,5 +1,5 @@
 import { UserDocument } from "@prisma/client";
-import { prisma } from "../../utils/prisma";
+import { prisma } from "../../shared/utils/prisma";
 import { CreateUserDocumentDatabase, UpdateUserDocumentsDatabase, } from "./userDocuments.schema";
 
 export const createUserDocuments = async (input: CreateUserDocumentDatabase) => {

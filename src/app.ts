@@ -32,7 +32,7 @@ declare module "@fastify/jwt" {
 }
 
 const buildServer = async () => {
-  const server = fastify({logger: true, bodyLimit: 30 * 1024 * 1024});
+  const server = fastify({ logger: true, bodyLimit: 30 * 1024 * 1024 });
 
   server.register(fjwt, {
     secret: String(process.env.JWT_SECRET)

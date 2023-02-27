@@ -3,7 +3,7 @@ import { findUserCollegeById } from "../userCollege/userCollege.service";
 import { DeleteUserDocumentSchema } from "./userDocuments.schema";
 import { createUserDocuments, deleteUserDocumentsById, getUserDocumentsById, updateUserDocuments } from "./userDocuments.service";
 import { useS3 } from "../../shared/services";
-import { EventEmitter } from "events";
+import { validateDocumentEmitter as emitter } from "../validations";
 
 const documentTypeEvent = {
   "IDENTITY_DOCUMENT_FRONT": "validateUserDocumentFront",
@@ -18,7 +18,6 @@ export const createUserDocumentsHandler = async (
 ) => {
   const id = req.user.studentId;
   const files = req.files();
-  const emitter = new EventEmitter();
 
   const userCollege = findUserCollegeById(id);
 
@@ -152,7 +151,6 @@ export const updateUserDocumentsHandler = async (
   res: FastifyReply,
 ) => {
   const id = req.user.studentId;
-  const emitter = new EventEmitter();
   const file = await req.file();
   const fileType = file?.fieldname;
 

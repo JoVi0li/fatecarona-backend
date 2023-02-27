@@ -1,4 +1,4 @@
-import { prisma } from "../../utils/prisma";
+import { prisma } from "../../shared/utils/prisma";
 import { CreateEventInput, UpdateEventStatusInput } from "./event.schema";
 
 export const createEvent = async (body: CreateEventInput) => {
