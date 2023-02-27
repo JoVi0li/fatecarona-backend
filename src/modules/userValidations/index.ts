@@ -1,1 +1,0 @@
-export { default as userValidationsRoutes } from "./userValidations.route";

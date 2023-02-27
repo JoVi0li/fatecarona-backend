@@ -16,6 +16,8 @@ export const findUserCollegeById = async(id: string) => {
     },
     include: {
       userDocument: true,
+      user: true,
+      course: true,
     }
   })
 };

@@ -1,17 +1,24 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { findUserCollegeById } from "../userCollege/userCollege.service";
-import { CreateUserDocumentInput, DeleteUserDocumentSchema, UpdateUserDocumentsInput } from "./userDocuments.schema";
+import { DeleteUserDocumentSchema } from "./userDocuments.schema";
 import { createUserDocuments, deleteUserDocumentsById, getUserDocumentsById, updateUserDocuments } from "./userDocuments.service";
-import { useUpload } from "../../shared/services";
-import { getUserCollegeHandler } from "../userCollege/userCollege.controller";
+import { useS3 } from "../../shared/services";
+import { EventEmitter } from "events";
+
+const documentTypeEvent = {
+  "IDENTITY_DOCUMENT_FRONT": "validateUserDocumentFront",
+  "IDENTITY_DOCUMENT_BACK": "validateUserDocumentBack",
+  "COLLEGE_DOCUMENT": "validateCollegeDocument",
+  "PHOTO": "validateUserPhoto"
+}
 
 export const createUserDocumentsHandler = async (
-  req: FastifyRequest<{ Body: CreateUserDocumentInput }>,
+  req: FastifyRequest,
   res: FastifyReply,
 ) => {
-  const body = req.body;
-  const id = body.userCollegeId
+  const id = req.user.studentId;
   const files = req.files();
+  const emitter = new EventEmitter();
 
   const userCollege = findUserCollegeById(id);
 
@@ -23,10 +30,10 @@ export const createUserDocumentsHandler = async (
     });
   }
 
-  const { uploadMultipleFiles } = useUpload();
+  const { uploadMultipleFiles } = useS3();
 
   try {
-    const uploadedFiles = await uploadMultipleFiles(files, "documents");
+    const uploadedFiles = await uploadMultipleFiles(files);
 
     const result: string[] = [];
 
@@ -35,8 +42,10 @@ export const createUserDocumentsHandler = async (
         userCollegeId: id,
         url: file.file.Location,
         key: file.file.Key,
-      })
+        type: file.type,
+      });
       result.push(document.id);
+      emitter.emit(documentTypeEvent[document.type], document);
     }
 
     return res.code(201).send({
@@ -139,14 +148,15 @@ export const deleteUserDocumentsHandler = async (
 }
 
 export const updateUserDocumentsHandler = async (
-  req: FastifyRequest<{ Body: UpdateUserDocumentsInput }>,
+  req: FastifyRequest,
   res: FastifyReply,
 ) => {
   const id = req.user.studentId;
-  const userDocumentId = req.body.userDocumentId;
+  const emitter = new EventEmitter();
   const file = await req.file();
+  const fileType = file?.fieldname;
 
-  const { uploadFile } = useUpload();
+  const { uploadFile } = useS3();
 
   const student = await findUserCollegeById(id);
 
@@ -158,9 +168,9 @@ export const updateUserDocumentsHandler = async (
     });
   }
 
-  const oldDocs = await getUserDocumentsById(userDocumentId);
+  const oldDoc = student.userDocument.find(doc => doc.type == fileType)
 
-  if (!oldDocs) {
+  if (!oldDoc) {
     return res.code(404).send({
       success: false,
       message: "Documentos não encontrados",
@@ -168,7 +178,7 @@ export const updateUserDocumentsHandler = async (
     });
   }
 
-  if (oldDocs.userCollegeId !== student.id) {
+  if (oldDoc.userCollegeId !== student.id) {
     return res.code(400).send({
       success: false,
       message: "Você não tem permissão para realizar essa operação",
@@ -177,16 +187,17 @@ export const updateUserDocumentsHandler = async (
   }
 
   try {
-    const fileUploaded = await uploadFile(file, "documents");
+    const fileUploaded = await uploadFile(file);
     const userDocument = await updateUserDocuments(
-      oldDocs.id,
+      oldDoc.id,
       {
         url: fileUploaded.file.Location,
         key: fileUploaded.file.Key,
         isValid: null
       },
-      oldDocs
+      oldDoc
     );
+    emitter.emit(documentTypeEvent[userDocument.type], userDocument);
     return res.code(200).send({
       success: true,
       message: "Documento atualizado com sucesso",

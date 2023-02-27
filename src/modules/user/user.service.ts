@@ -10,7 +10,10 @@ export const createUser = async (input: CreateUserDatabase) => {
   const hash = await bcrypt.hash(password, salt);
 
   const user = await prisma.user.create({
-    data: { ...rest, salt, password: hash }
+    data: { ...rest, salt, password: hash },
+    include: {
+      userCollege: true
+    }
   });
 
   return user;
@@ -50,8 +53,6 @@ export const updateUser= async (newUser: UpdateUserDatabase, oldUser: User) => {
     },
     data: {
       name: newUser.name ?? oldUser.name,
-      photo: newUser.photo ?? oldUser.photo,
-      photoKey: newUser.photoKey ?? oldUser.photoKey,
       phone: newUser.phone ?? oldUser.phone,
       gender: newUser.gender ?? oldUser.gender,
     }

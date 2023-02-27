@@ -2,32 +2,45 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { CreateUserInput, SigninUserInput, UpdateUserInput } from "./user.schema";
 import { createUser, deleteUserById, findUserById, findUserByEmail, updateUser } from "./user.service";
 import bcrypt from "bcrypt";
-import { useUpload } from "../../shared/services";
+import EventEmitter from "events";
 
 export const createUserHandler = async (
   req: FastifyRequest<{ Body: CreateUserInput }>,
   res: FastifyReply,
 ) => {
   const body = req.body;
-  const file = await req.file();
-
-  const { uploadFile } = useUpload();
+  const emitter = new EventEmitter();
 
   try {
-    const photo = await uploadFile(file, "photos");
-    const user = await createUser({
-      photo: photo.file.Location,
-      photoKey: photo.file.Key,
-      ...body
-    });
+    const user = await createUser(body);
+
+    const token = req.jwt.sign(
+      {
+        userId: user.id,
+        studentId: user.userCollege!.id,
+        courseId: user.userCollege!.courseId,
+        name: user.name,
+        email: user.email,
+        role: user.userCollege!.role,
+      },
+      {
+        expiresIn: 60 * 24 * 7,
+        aud: "Fatecarona",
+
+      },
+    );
+
+    emitter.emit("verifyEmail", user);
+
     return res.code(201).send({
       success: true,
       message: "Usuário criado com sucesso",
-      data: user.id,
+      data: token,
     })
   } catch (error) {
     return res.send({
       success: false,
+      message: "Nao foi possível criar o usuário",
       error
     })
   }
@@ -131,11 +144,9 @@ export const udpateUserHandler = async (
 ) => {
   const body = req.body;
   const id = req.user.userId;
-  const file = await req.file();
 
   const user = await findUserById(id);
 
-  const { uploadFile } = useUpload();
 
   if (!user) {
     return res.code(404).send({
@@ -146,15 +157,7 @@ export const udpateUserHandler = async (
   }
 
   try {
-    const photo = await uploadFile(file, "photos");
-
-    const newUser = {
-      ...body,
-      photo: photo.file.Location,
-      photoKey: photo.file.Key
-    };
-    
-    const userUpdated = await updateUser(newUser, user);
+    const userUpdated = await updateUser(body, user);
 
     const { password, salt, ...rest } = userUpdated;
 

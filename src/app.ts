@@ -2,13 +2,12 @@ import fastify, { FastifyReply, FastifyRequest } from "fastify";
 import fjwt, { JWT } from "@fastify/jwt";
 import multipart from "@fastify/multipart";
 import { userRoutes } from "./modules/user";
-import { userCollegeRoutes } from "./modules/userCollege";
 import { collegeRoutes } from "./modules/college";
 import { courseRoutes } from "./modules/course";
-import { userDocumentsRoutes } from "./modules/userDocuments";
-import { userValidationsRoutes } from "./modules/userValidations";
 import { eventRoutes } from "./modules/event";
 import { participantRoutes } from "./modules/participant";
+import { userCollegeRoutes } from "./modules/userCollege";
+import { userDocumentsRoutes } from "./modules/userDocuments";
 
 declare module "fastify" {
   export interface FastifyRequest {
@@ -72,8 +71,6 @@ const buildServer = async () => {
   server.register(courseRoutes, { prefix: 'api/courses' });
 
   server.register(userDocumentsRoutes, { prefix: 'api/userdocuments' });
-
-  server.register(userValidationsRoutes, {prefix: 'api/uservalidations'});
 
   server.register(eventRoutes, { prefix: 'api/events' });
 
