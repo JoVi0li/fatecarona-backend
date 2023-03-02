@@ -4,12 +4,13 @@ import nodemailer from "nodemailer";
 
 const emitter = new EventEmitter();
 
-emitter.on("verifyEmail", (user: User, token: string) => {
-  console.log("verifyEmail");
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
+emitter.on("verifyEmail", async (user: User, token: string) => {
+  const transport = nodemailer.createTransport({
+    host: String(process.env.SENDGRID_HOST),
+    port: Number(process.env.SENDGRID_PORT),
     auth: {
-      user: "akatavagreen@22jharots.com",
+      user: String(process.env.SENDGRID_USER),
+      pass: String(process.env.SENDGRID_PASS)
     }
   });
 
@@ -29,13 +30,7 @@ emitter.on("verifyEmail", (user: User, token: string) => {
           Obrigado!`
   };
 
-  transporter.sendMail(mailConfiguration, (err, msg) => {
-    if (err) {
-      console.log({ err })
-      return emitter.emit("errorOnEmailValidation", err);
-    }
-  })
-  console.log("verifyEmail", "deu certo");
+  await transport.sendMail(mailConfiguration);
 });
 
 export default emitter;

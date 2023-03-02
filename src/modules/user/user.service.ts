@@ -1,5 +1,5 @@
 import { prisma } from "../../shared/utils/prisma";
-import { CreateUserDatabase, UpdateUserDatabase, UpdateUserInput } from "./user.schema";
+import { CreateUserDatabase, UpdateUserDatabase } from "./user.schema";
 import bcrypt from "bcrypt";
 import { User } from "@prisma/client";
 
@@ -46,7 +46,7 @@ export const deleteUserById = async (id: string) => {
   })
 }
 
-export const updateUser= async (newUser: UpdateUserDatabase, oldUser: User) => {
+export const updateUser = async (newUser: UpdateUserDatabase, oldUser: User) => {
   return await prisma.user.update({
     where: {
       id: oldUser.id

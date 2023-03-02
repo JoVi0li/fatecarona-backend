@@ -18,10 +18,7 @@ const createUserDatabase = z.object({
   gender: z.enum(["MALE", "FEMALE"], {required_error: "O sexo é obrigatório"})
 });
 
-const signinUserSchema = z.object({
-  email: z.string({required_error:"O e-mail é obrigatório"}).email().endsWith("fatec.sp.gov.br", "E-mail inválido"),
-  password: z.string({required_error:"A senha é obrigatória"}).min(8, "A senha precisa conter no mínimo 8 caracteres"),
-});
+
 
 const updateUserSchema = z.object({
   name: z.string().min(3, "Nome inválido").nullable(),
@@ -37,6 +34,5 @@ const updateUserDatabase = z.object({
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type CreateUserDatabase = z.infer<typeof createUserDatabase>;
-export type SigninUserInput = z.infer<typeof signinUserSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 export type UpdateUserDatabase = z.infer<typeof updateUserDatabase>;

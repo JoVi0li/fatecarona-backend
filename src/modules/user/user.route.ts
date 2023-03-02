@@ -1,11 +1,9 @@
 import { FastifyInstance } from "fastify";
-import { createUserHandler, deleteUserHandler, getUserHandler, signinHandler, udpateUserHandler } from "./user.controller";
+import { createUserHandler, deleteUserHandler, getUserHandler, udpateUserHandler } from "./user.controller";
 
 const userRoutes = async (server: FastifyInstance) => {
 
   server.post('/', createUserHandler);
-
-  server.post('/signin', signinHandler);
 
   server.get('/', { preHandler: [server.auth] }, getUserHandler);
 
