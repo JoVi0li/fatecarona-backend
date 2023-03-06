@@ -11,5 +11,6 @@ export {
   createUserDocuments,
   updateUserDocuments,
   getUserDocumentsById,
-  deleteUserDocumentsById
+  deleteUserDocumentsById,
+  getPhotoByUserCollegeId
 } from "./userDocuments.service"

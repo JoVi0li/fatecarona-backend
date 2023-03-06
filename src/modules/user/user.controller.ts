@@ -1,99 +1,41 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { CreateUserInput, SigninUserInput, UpdateUserInput } from "./user.schema";
-import { createUser, deleteUserById, findUserById, findUserByEmail, updateUser } from "./user.service";
-import bcrypt from "bcrypt";
+import { CreateUserInput, UpdateUserInput } from "./user.schema";
+import { createUser, deleteUserById, findUserById, updateUser } from "./user.service";
 import { validateEmailEmitter as emitter } from "../validations";
+import { jwtUtil } from "../../shared/utils";
 
 export const createUserHandler = async (
   req: FastifyRequest<{ Body: CreateUserInput }>,
   res: FastifyReply,
 ) => {
+  const { generateSignUpToken } = jwtUtil(req);
+
   const body = req.body;
 
   try {
     const user = await createUser(body);
 
-    const token = req.jwt.sign(
-      {
-        userId: user.id,
-        name: user.name,
-        email: user.email,
-      },
-      {
-        expiresIn: "1h",
-        aud: "Fatecarona",
+    const token = generateSignUpToken(user);
 
-      },
-    );
-
-    emitter.emit("verifyEmail", user, token);
-
-    const hasListeners = emitter.emit("verifyEmail")
-    console.log({hasListeners})
-
-    console.log({token})
+    emitter.emit("verifyEmail", user);
 
     return res.code(201).send({
       success: true,
       message: "Usuário criado com sucesso",
       data: token,
-    })
-  } catch (error) {
-    console.log({error})
+    });
 
-    return res.send({
+  } catch (error) {
+
+    return res.code(500).send({
       success: false,
+      code: 500,
       message: "Nao foi possível criar o usuário",
-      error
-    })
+      error: error
+    });
+
   }
 }
-
-export const signinHandler = async (
-  req: FastifyRequest<{ Body: SigninUserInput }>,
-  res: FastifyReply,
-) => {
-  const body = req.body;
-
-  const user = await findUserByEmail(body.email)
-
-  if (!user) {
-    return res.status(401).send({
-      success: false,
-      message: "Credenciais inválidas"
-    });
-  }
-
-  const correctPassword = await bcrypt.compare(body.password, user.password);
-
-  if (!correctPassword) {
-    return res.status(401).send({
-      success: false,
-      message: "Credenciais inválidas"
-    });
-  }
-
-  const token = req.jwt.sign({
-    userId: user.id,
-    studentId: user.userCollege!.id,
-    courseId: user.userCollege!.courseId,
-    name: user.name,
-    email: user.email,
-    role: user.userCollege!.role,
-  },
-    {
-      expiresIn: 604800,
-      aud: "Fatecarona",
-
-    });
-
-  return res.code(200).send({
-    success: true,
-    message: "Autenticado com sucesso",
-    data: token
-  })
-
-};
 
 export const getUserHandler = async (
   req: FastifyRequest,
@@ -116,7 +58,7 @@ export const getUserHandler = async (
     success: true,
     message: "Usuário encontrado",
     data: { ...rest }
-  })
+  });
 };
 
 export const deleteUserHandler = async (
@@ -138,7 +80,7 @@ export const deleteUserHandler = async (
     success: true,
     message: "Conta removida com sucesso",
     data: null
-  })
+  });
 }
 
 export const udpateUserHandler = async (
@@ -149,7 +91,6 @@ export const udpateUserHandler = async (
   const id = req.user.userId;
 
   const user = await findUserById(id);
-
 
   if (!user) {
     return res.code(404).send({
@@ -168,12 +109,12 @@ export const udpateUserHandler = async (
       success: true,
       message: "Usuário atualizado com sucesso",
       data: { ...rest }
-    })
+    });
   } catch (error) {
     return res.code(500).send({
       success: false,
       message: "Não foi possível atualizar o usuário",
       error: error
-    })
+    });
   }
 }

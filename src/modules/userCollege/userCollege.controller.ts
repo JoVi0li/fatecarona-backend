@@ -1,4 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
+import { z } from "zod";
+import { SignUpToken } from "../../shared/utils";
 import { CreateUserCollegeInput, UpdateUserCollegeRole } from "./userCollege.schema";
 import { createUserCollege, deleteUserCollegeById, findUserCollegeById, updateUserCollegeRole } from "./userCollege.service";
 
@@ -8,17 +10,29 @@ export const createUserCollegeHandler = async (
 ) => {
 
   const body = req.body;
+  const token = req.user as SignUpToken;
+  const datetime = z.string().datetime();
 
   try {
-    const userCollege = await createUserCollege(body);
+    const data = {
+      courseId: body.courseId,
+      studentNumber: body.studentNumber,
+      conclusion: datetime.parse(body.conclusion),
+      userId: token.userId,
+    }
+
+    const userCollege = await createUserCollege(data);
+
     return res.code(201).send({
       success: true,
+      code: 201,
       message: "Estudante criado com sucesso",
       data: userCollege.id,
     });
   } catch (error) {
-    return res.send({
+    return res.status(500).send({
       success: false,
+      code: 500,
       message: "Não foi possível criar o estudante",
       error: error,
     });
@@ -33,7 +47,7 @@ export const getUserCollegeHandler = async (
 
   const student = await findUserCollegeById(id);
 
-  if(!student) {
+  if (!student) {
     return res.code(404).send({
       success: false,
       message: "Estudante não encontrado",
@@ -56,7 +70,7 @@ export const deleteUserCollegeHandler = async (
 
   const student = await deleteUserCollegeById(id);
 
-  if(!student) {
+  if (!student) {
     return res.code(500).send({
       success: false,
       message: "Não foi possível excluir o estudante",
@@ -68,7 +82,7 @@ export const deleteUserCollegeHandler = async (
     success: false,
     message: "Estudante removido com sucesso",
     data: null
-  })
+  });
 };
 
 export const updateUserCollegeRoleHandler = async (
@@ -80,7 +94,7 @@ export const updateUserCollegeRoleHandler = async (
 
   const student = await findUserCollegeById(id);
 
-  if(!student) {
+  if (!student) {
     return res.code(404).send({
       success: false,
       message: "Estudante não encontrado",

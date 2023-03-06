@@ -1,4 +1,5 @@
 import fastify, { FastifyReply, FastifyRequest } from "fastify";
+import dotenv from "dotenv";
 import fjwt, { JWT } from "@fastify/jwt";
 import multipart from "@fastify/multipart";
 import { userRoutes } from "./modules/user";
@@ -8,6 +9,8 @@ import { eventRoutes } from "./modules/event";
 import { participantRoutes } from "./modules/participant";
 import { userCollegeRoutes } from "./modules/userCollege";
 import { userDocumentsRoutes } from "./modules/userDocuments";
+import { TokenStatus } from "./shared/utils";
+import { authRoutes } from "./modules/auth";
 
 declare module "fastify" {
   export interface FastifyRequest {
@@ -27,15 +30,21 @@ declare module "@fastify/jwt" {
       email: string;
       name: string;
       role: string;
+      status: TokenStatus
     }
   }
 }
 
 const buildServer = async () => {
+  dotenv.config();
+
+  const secret = process.env.JWT_SECRET!;
+  const port = Number(process.env.PORT!);
+
   const server = fastify({ logger: true, bodyLimit: 30 * 1024 * 1024 });
 
   server.register(fjwt, {
-    secret: String(process.env.JWT_SECRET)
+    secret: secret
   });
 
   server.register(multipart);
@@ -62,25 +71,27 @@ const buildServer = async () => {
     }
   );
 
-  server.register(userRoutes, { prefix: 'api/users' });
+  server.register(userRoutes, { prefix: 'api/user' });
 
-  server.register(userCollegeRoutes, { prefix: 'api/usercolleges' });
+  server.register(userCollegeRoutes, { prefix: 'api/usercollege' });
 
-  server.register(collegeRoutes, { prefix: 'api/colleges' });
+  server.register(collegeRoutes, { prefix: 'api/college' });
 
-  server.register(courseRoutes, { prefix: 'api/courses' });
+  server.register(courseRoutes, { prefix: 'api/course' });
 
-  server.register(userDocumentsRoutes, { prefix: 'api/userdocuments' });
+  server.register(userDocumentsRoutes, { prefix: 'api/userdocument' });
 
-  server.register(eventRoutes, { prefix: 'api/events' });
+  server.register(eventRoutes, { prefix: 'api/event' });
 
   server.register(participantRoutes, { prefix: 'api/participant' });
 
+  server.register(authRoutes, { prefix: 'api/auth' });
+
   try {
     await server.listen({
-      port: Number(process.env.PORT),
+      port: port,
     });
-    console.log(process.env.PORT)
+    console.log(`Running on: ${port}`)
   } catch (error) {
     console.error(error);
     process.exit(1);

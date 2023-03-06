@@ -2,7 +2,7 @@ import { FastifyInstance } from "fastify";
 import { createUserCollegeHandler, deleteUserCollegeHandler, getUserCollegeHandler, updateUserCollegeRoleHandler } from "./userCollege.controller";
 
 const userCollegeRoutes = async (server: FastifyInstance) => {
-  server.post('/', { preHandler: [server.auth] } , createUserCollegeHandler);
+  server.post('/', { preHandler: [server.auth] }, createUserCollegeHandler);
 
   server.get('/', { preHandler: [server.auth] }, getUserCollegeHandler);
 

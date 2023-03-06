@@ -1,41 +1,44 @@
 import { User } from "@prisma/client";
 import { EventEmitter } from "events";
 import nodemailer from "nodemailer";
+import dotenv from "dotenv"
 
 const emitter = new EventEmitter();
 
-emitter.on("verifyEmail", (user: User, token: string) => {
-  console.log("verifyEmail");
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
+emitter.on("verifyEmail", async (user: User) => {
+  dotenv.config();
+
+  const host = process.env.SENDGRID_HOST!;
+  const port = Number(process.env.SENDGRID_PORT);
+  const authUser = process.env.SENDGRID_USER!;
+  const authPass = process.env.SENDGRID_PASS!;
+  const mailFrom = process.env.MAIL_FROM!;
+
+  const transport = nodemailer.createTransport({
+    host: host,
+    port: port,
     auth: {
-      user: "akatavagreen@22jharots.com",
+      user: authUser,
+      pass: authPass
     }
   });
 
   const mailConfiguration = {
-    from: "jovioli.dev04@gmail.com",
+    from: mailFrom,
     to: user.email,
     subject: "Confirmação do e-mail",
     text: `Fala aí, seja muito bem-vindo(a) ao Fatecarona!
 
-          Este e-mail serve para confirmar seu e-mail e validar
-          seu cadastro no app.
+          Confirme seu e-mail para validar seu cadastro no app.
           
           Por favor, clique no link abaixo para realizar a confirmação.
           
-          http://localhost:3000/verify/${token}
+          http://127.0.0.1:3030/api/auth/verifyemail/${user.id}
           
           Obrigado!`
   };
 
-  transporter.sendMail(mailConfiguration, (err, msg) => {
-    if (err) {
-      console.log({ err })
-      return emitter.emit("errorOnEmailValidation", err);
-    }
-  })
-  console.log("verifyEmail", "deu certo");
+  await transport.sendMail(mailConfiguration);
 });
 
 export default emitter;

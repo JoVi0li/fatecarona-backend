@@ -12,5 +12,6 @@ export {
   updateUserCollegeRole,
   findEventsWhereIAmParticipant,
   findUserCollegeById,
-  deleteUserCollegeById
+  deleteUserCollegeById,
+  findUserCollegeByUserId
 } from "./userCollege.service";
