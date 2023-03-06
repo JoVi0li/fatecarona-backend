@@ -8,36 +8,37 @@ datasource db {
 }
 
 model User {
-  id               String        @id @default(uuid())
-  email            String        @unique
-  verifiedEmail    Boolean       @default(false)
+  id               String       @id @default(uuid())
+  email            String       @unique
+  verifiedEmail    Boolean      @default(false)
   password         String
   name             String
   salt             String
   phone            String
-  identityDocument String        @unique
+  identityDocument String       @unique
   gender           Gender
   userCollege      UserCollege?
 }
 
 model UserCollege {
-  id                String         @id @default(uuid())
-  role              UserRoles      @default(NORMAL)
-  user              User           @relation(fields: [userId], references: [id])
-  course            Course         @relation(fields: [courseId], references: [id])
-  userId            String         @unique
-  courseId          String
-  studentNumber     String         @unique
-  ownerEvents       Event[]        @relation(name: "event-owner")
-  participantEvents Participant[]
-  userDocument      UserDocument[]
+  id                    String         @id @default(uuid())
+  role                  UserRoles      @default(NORMAL)
+  user                  User           @relation(fields: [userId], references: [id])
+  course                Course         @relation(fields: [courseId], references: [id])
+  userId                String         @unique
+  courseId              String
+  studentNumber         String         @unique
+  verifiedStudentNumber Boolean        @default(false)
+  conclusion            DateTime
+  ownerEvents           Event[]        @relation(name: "event-owner")
+  participantEvents     Participant[]
+  userDocument          UserDocument[]
 }
 
 model UserDocument {
   id            String           @id @default(uuid())
   userCollegeId String
   userCollege   UserCollege      @relation(fields: [userCollegeId], references: [id])
-  url           String
   key           String
   isValid       Boolean          @default(false)
   type          UserDocumentType

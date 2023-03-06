@@ -1,13 +1,15 @@
 import { User, UserCollege } from "@prisma/client";
 import { FastifyRequest } from "fastify";
+import { getPhotoByUserCollegeId } from "../../modules/userDocuments";
+import { useS3 } from "../services";
 
-export type TokenStatus = "SIGNUP" | "SIGNIN";
+export type TokenStatus = "SIGNUP" | "SIGNIN" | "VERIFY_EMAIL";
 
 export type SignUpToken = {
   userId: string;
   name: string;
   email: string;
-  status: TokenStatus
+  status: TokenStatus;
 }
 
 export type SignInToken = {
@@ -18,6 +20,7 @@ export type SignInToken = {
   email: string;
   role: string;
   status: TokenStatus;
+  photoUrl: string;
 }
 
 const jwtUtil = (req: FastifyRequest,) => {
@@ -40,11 +43,18 @@ const jwtUtil = (req: FastifyRequest,) => {
     return token;
   }
 
-  const generateSignInToken = (
+  const generateSignInToken = async (
     user: (User & {
       userCollege: UserCollege | null;
     })
   ) => {
+
+    const { getFileUrl } = useS3();
+
+    const document = await getPhotoByUserCollegeId(user.userCollege!.id);
+
+    const photoUrl = await getFileUrl(document!.key);
+
     const data: SignInToken = {
       userId: user.id,
       studentId: user.userCollege!.id,
@@ -52,7 +62,8 @@ const jwtUtil = (req: FastifyRequest,) => {
       name: user.name,
       email: user.email,
       role: user.userCollege!.role,
-      status: "SIGNIN"
+      status: "SIGNIN",
+      photoUrl: photoUrl
     };
 
     const options = {

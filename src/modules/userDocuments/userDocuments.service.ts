@@ -21,6 +21,32 @@ export const getUserDocumentsById = async (id: string) => {
   });
 }
 
+export const getUserDocumentByUserCollegeId = async (id: string) => {
+  return await prisma.userDocument.findMany({
+    where: {
+      userCollegeId: id,
+    }
+  })
+}
+
+export const getPhotoByUserCollegeId = async (id: string) => {
+  return await prisma.userDocument.findFirst({
+    where: {
+      type: "PHOTO",
+      userCollegeId: id,
+    }
+  })
+}
+
+export const getInvalidUserDocumentByUserCollegeId = async (id: string) => {
+  return await prisma.userDocument.findMany({
+    where: {
+      userCollegeId: id,
+      isValid: false
+    }
+  });
+}
+
 export const deleteUserDocumentsById = async (id: string) => {
   return await prisma.userDocument.delete({
     where: {
@@ -35,7 +61,6 @@ export const updateUserDocuments = async(id: string, newDocs: UpdateUserDocument
       id: id
     },
     data: {
-      url: newDocs.url ?? oldDocs.url,
       key: newDocs.key ?? oldDocs.key,
       isValid: newDocs.isValid ?? oldDocs.isValid,
     },

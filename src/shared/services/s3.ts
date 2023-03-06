@@ -1,85 +1,113 @@
-import AWS from 'aws-sdk';
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { randomUUID } from 'crypto';
-
-type BucketType = "documents" | "photos";
+import dotenv from "dotenv";
 
 type FieldnameType = "IDENTITY_DOCUMENT_FRONT" | "IDENTITY_DOCUMENT_BACK" | "COLLEGE_DOCUMENT" | "PHOTO";
 
 export interface FilesUploadedResult {
-  file: AWS.S3.ManagedUpload.SendData,
-  fileName: string,
+  key: string,
   type: FieldnameType
 }
 
 const useS3 = () => {
+  dotenv.config();
+  const bucketName = process.env.BUCKET_NAME!;
+  const bucketRegion = process.env.BUCKET_REGION!;
+  const accessKey = process.env.AWS_ACCESS_KEY!;
+  const secretAccessKey = process.env.AWS_SECRET_KEY!;
+
   const allowedFileTypes = ["image/png", "image/jpeg", "image/jpg"];
 
-  const s3 = new AWS.S3({
+  const s3 = new S3Client({
     credentials: {
-      accessKeyId: String(process.env.AWS_ACCESS_KEY),
-      secretAccessKey: String(process.env.AWS_SECRET_KEY)
-    }
-  });
+      accessKeyId: accessKey,
+      secretAccessKey: secretAccessKey
+    },
+    region: bucketRegion
+  })
 
-  const upload = async (file: any, bucket: BucketType) => {
-    return await s3.upload({
-      Bucket: `${process.env.BUCKET_AWS}/${bucket}`,
-      Key: randomUUID(),
-      Body: file,
-    }).promise();
-  }
 
   const uploadFile = async (file: any): Promise<FilesUploadedResult> => {
     /// file props: enconding, file, filename, fields, fieldname, mimetype, toBuffer
     if (!allowedFileTypes.includes(file.mimetype)) {
       throw new Error("Tipo do arquivo inválido");
     }
+
+    const type = file.fieldname as FieldnameType;
     const buffer = await file.toBuffer();
-    const fieldname = file.fieldname as FieldnameType;
-    const bucket = fieldname === "PHOTO" ? "photos" : "documents"
-    const uploadedFile = await upload(buffer, bucket);
+    const mimetype = file.mimetype;
+    const key = randomUUID();
+
+    const command = new PutObjectCommand({
+      Key: key,
+      Bucket: bucketName,
+      Body: buffer,
+      ContentType: mimetype,
+    });
+
+    await s3.send(command);
+
     return {
-      file: uploadedFile,
-      fileName: file.fieldname,
-      type: file.fieldname
+      key: key,
+      type: type,
     };
   }
 
   const uploadMultipleFiles = async (files: any): Promise<FilesUploadedResult[]> => {
     const uploadedFiles: FilesUploadedResult[] = [];
-    for await (const part of files) {
-      if (!allowedFileTypes.includes(part.mimetype)) {
+
+    for await (const file of files) {
+      if (!allowedFileTypes.includes(file.mimetype)) {
         throw new Error("Tipo do arquivo inválido");
       }
-      const fileBuffer = await part.toBuffer();
-      const fileType = part.fieldname as FieldnameType;
-      const bucket = fileType === "PHOTO" ? "photos" : "documents";
-      const file = await upload(fileBuffer, bucket);
+
+      const type = file.fieldname as FieldnameType;
+      const buffer = await file.toBuffer();
+      const mimetype = file.mimetype;
+      const key = randomUUID();
+
+      const command = new PutObjectCommand({
+        Key: key,
+        Bucket: bucketName,
+        Body: buffer,
+        ContentType: mimetype,
+      });
+
+      await s3.send(command);
+
       uploadedFiles.push({
-        file: file,
-        fileName: part.fieldname,
-        type: fileType
+        key: key,
+        type: type
       });
     }
+
     return uploadedFiles;
   }
 
-  const getFile = async (key: string, bucket: BucketType) => {
-    let file: AWS.S3.Body | undefined;
-    s3.getObject({
-      Bucket: `${process.env.BUCKET_AWS}/${bucket}`,
-      Key: key
-    }, (error, value) => {
-      if (error) {
-        throw new Error(error.message)
-      }
-      file = value.Body;
+  const getFile = async (key: string) => {
+    const command =  new GetObjectCommand({
+      Key: key,
+      Bucket: bucketName
     });
 
-    return file;
+    const file = await s3.send(command);
+
+    return file.Body;
   }
 
-  return { uploadFile, uploadMultipleFiles, getFile };
+  const getFileUrl = async (key: string) => {
+    const command = new GetObjectCommand({
+      Key: key,
+      Bucket: bucketName,
+    });
+
+    const url = await getSignedUrl(s3, command, { expiresIn: 60 * 60 * 24 * 7 });
+
+    return url;
+  }
+
+  return { uploadFile, uploadMultipleFiles, getFileUrl, getFile };
 }
 
 export default useS3;

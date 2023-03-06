@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { findUserCollegeById } from "../userCollege/userCollege.service";
+import { findUserCollegeByUserId } from "../userCollege/userCollege.service";
 import { DeleteUserDocumentSchema } from "./userDocuments.schema";
 import { createUserDocuments, deleteUserDocumentsById, getUserDocumentsById, updateUserDocuments } from "./userDocuments.service";
 import { useS3 } from "../../shared/services";
@@ -16,10 +16,10 @@ export const createUserDocumentsHandler = async (
   req: FastifyRequest,
   res: FastifyReply,
 ) => {
-  const id = req.user.studentId;
+  const id = req.user.userId;
   const files = req.files();
 
-  const userCollege = findUserCollegeById(id);
+  const userCollege = await findUserCollegeByUserId(id);
 
   if (!userCollege) {
     return res.send({
@@ -38,12 +38,11 @@ export const createUserDocumentsHandler = async (
 
     for await (const file of uploadedFiles) {
       const document = await createUserDocuments({
-        userCollegeId: id,
-        url: file.file.Location,
-        key: file.file.Key,
+        userCollegeId: userCollege.id,
+        key: file.key,
         type: file.type,
       });
-      result.push(document.id);
+      result.push(file.key);
       emitter.emit(documentTypeEvent[document.type], document);
     }
 
@@ -65,9 +64,9 @@ export const getUserDocumentsHandler = async (
   req: FastifyRequest,
   res: FastifyReply,
 ) => {
-  const id = req.user.studentId;
+  const id = req.user.userId;
 
-  const student = await findUserCollegeById(id);
+  const student = await findUserCollegeByUserId(id);
 
   if (!student) {
     return res.code(404).send({
@@ -98,10 +97,10 @@ export const deleteUserDocumentsHandler = async (
   req: FastifyRequest<{ Body: DeleteUserDocumentSchema }>,
   res: FastifyReply,
 ) => {
-  const studentId = req.user.studentId;
+  const studentId = req.user.userId;
   const documentId = req.body.documentId;
 
-  const student = await findUserCollegeById(studentId);
+  const student = await findUserCollegeByUserId(studentId);
 
   if (!student) {
     return res.code(404).send({
@@ -150,13 +149,13 @@ export const updateUserDocumentsHandler = async (
   req: FastifyRequest,
   res: FastifyReply,
 ) => {
-  const id = req.user.studentId;
+  const id = req.user.userId;
   const file = await req.file();
   const fileType = file?.fieldname;
 
   const { uploadFile } = useS3();
 
-  const student = await findUserCollegeById(id);
+  const student = await findUserCollegeByUserId(id);
 
   if (!student) {
     return res.code(404).send({
@@ -189,9 +188,8 @@ export const updateUserDocumentsHandler = async (
     const userDocument = await updateUserDocuments(
       oldDoc.id,
       {
-        url: fileUploaded.file.Location,
-        key: fileUploaded.file.Key,
-        isValid: null
+        key: fileUploaded.key,
+        isValid: false
       },
       oldDoc
     );

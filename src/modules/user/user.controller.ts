@@ -3,11 +3,13 @@ import { CreateUserInput, UpdateUserInput } from "./user.schema";
 import { createUser, deleteUserById, findUserById, updateUser } from "./user.service";
 import { validateEmailEmitter as emitter } from "../validations";
 import { jwtUtil } from "../../shared/utils";
+
 export const createUserHandler = async (
   req: FastifyRequest<{ Body: CreateUserInput }>,
   res: FastifyReply,
 ) => {
   const { generateSignUpToken } = jwtUtil(req);
+
   const body = req.body;
 
   try {
@@ -15,25 +17,25 @@ export const createUserHandler = async (
 
     const token = generateSignUpToken(user);
 
-    emitter.emit("verifyEmail", user, token);
+    emitter.emit("verifyEmail", user);
 
     return res.code(201).send({
       success: true,
       message: "Usuário criado com sucesso",
       data: token,
-    })
+    });
+
   } catch (error) {
-    console.log({error});
+
     return res.code(500).send({
       success: false,
       code: 500,
       message: "Nao foi possível criar o usuário",
       error: error
-    })
+    });
+
   }
 }
-
-
 
 export const getUserHandler = async (
   req: FastifyRequest,
@@ -56,7 +58,7 @@ export const getUserHandler = async (
     success: true,
     message: "Usuário encontrado",
     data: { ...rest }
-  })
+  });
 };
 
 export const deleteUserHandler = async (
@@ -78,7 +80,7 @@ export const deleteUserHandler = async (
     success: true,
     message: "Conta removida com sucesso",
     data: null
-  })
+  });
 }
 
 export const udpateUserHandler = async (
@@ -89,7 +91,6 @@ export const udpateUserHandler = async (
   const id = req.user.userId;
 
   const user = await findUserById(id);
-
 
   if (!user) {
     return res.code(404).send({
@@ -108,12 +109,12 @@ export const udpateUserHandler = async (
       success: true,
       message: "Usuário atualizado com sucesso",
       data: { ...rest }
-    })
+    });
   } catch (error) {
     return res.code(500).send({
       success: false,
       message: "Não foi possível atualizar o usuário",
       error: error
-    })
+    });
   }
 }

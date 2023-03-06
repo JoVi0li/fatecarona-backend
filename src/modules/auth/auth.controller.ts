@@ -4,6 +4,7 @@ import { SigninUserInput } from "./auth.schema";
 import bcrypt from "bcrypt";
 import { verifyEmail } from "./auth.service";
 import { jwtUtil } from "../../shared/utils";
+import { getInvalidUserDocumentByUserCollegeId, getUserDocumentByUserCollegeId } from "../userDocuments/userDocuments.service";
 
 export const signinHandler = async (
   req: FastifyRequest<{ Body: SigninUserInput }>,
@@ -12,7 +13,25 @@ export const signinHandler = async (
   const { generateSignInToken } = jwtUtil(req);
   const body = req.body;
 
-  const user = await findUserByEmail(body.email)
+  const user = await findUserByEmail(body.email);
+
+  if (!user?.userCollege) {
+    return res.status(400).send({
+      success: false,
+      code: 400,
+      message: "Cadastro incompleto",
+      error: null
+    });
+  }
+
+  if (!user.userCollege.verifiedStudentNumber) {
+    return res.status(400).send({
+      success: false,
+      code: 400,
+      message: "RA inválido",
+      error: null
+    });
+  }
 
   if (!user) {
     return res.status(401).send({
@@ -43,7 +62,29 @@ export const signinHandler = async (
     });
   }
 
-  const token = generateSignInToken(user);
+  const documents = await getUserDocumentByUserCollegeId(user.userCollege.id);
+
+  const invalidDocuments = documents.filter(doc => !doc.isValid);
+
+  if (invalidDocuments.length > 0) {
+    return res.status(400).send({
+      success: false,
+      code: 400,
+      message: "Possui documento(s) inválido(s)",
+      error: null
+    });
+  }
+
+  if (documents.length < 4) {
+    return res.status(400).send({
+      success: false,
+      code: 400,
+      message: "Documentos insuficientes",
+      error: null
+    });
+  }
+
+  const token = await generateSignInToken(user);
 
   return res.code(200).send({
     success: true,
@@ -54,10 +95,19 @@ export const signinHandler = async (
 };
 
 export const verifyEmailHandler = async (
-  req: FastifyRequest,
+  req: FastifyRequest<{ Params: { id: string } }>,
   res: FastifyReply
 ) => {
-  const { userId: id, status } = req.user;
+  const id = req.params.id;
+
+  if (!id) {
+    return res.status(400).send({
+      success: false,
+      status: 400,
+      message: "Token inválido",
+      error: null,
+    });
+  }
 
   const user = await findUserById(id);
 
@@ -70,11 +120,11 @@ export const verifyEmailHandler = async (
     });
   }
 
-  if (status != "SIGNIN") {
+  if (user.verifiedEmail) {
     return res.code(400).send({
       success: false,
       code: 400,
-      message: "Usuário inválido.",
+      message: "Usuário já verificado",
       error: null,
     });
   }
