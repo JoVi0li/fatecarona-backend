@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { createCourseHandler, getCourseHandler, getAllCoursesHandler, deleteCourseHandler, updateCourseHandler } from "./course.controller";
+import { createCourseHandler, getCourseHandler, getAllCoursesHandler, deleteCourseHandler, updateCourseHandler } from ".";
 
 const courseRoutes = async (server: FastifyInstance) => {
   server.post('/', {preHandler: [server.auth]}, createCourseHandler);
@@ -11,8 +11,6 @@ const courseRoutes = async (server: FastifyInstance) => {
   server.delete('/:id', { preHandler: [server.auth] }, deleteCourseHandler);
 
   server.patch('/:id', { preHandler: [server.auth] }, updateCourseHandler);
-
-
 }
 
 export default courseRoutes;

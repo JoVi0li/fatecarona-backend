@@ -9,8 +9,8 @@ import { eventRoutes } from "./modules/event";
 import { participantRoutes } from "./modules/participant";
 import { userCollegeRoutes } from "./modules/userCollege";
 import { userDocumentsRoutes } from "./modules/userDocuments";
-import { TokenStatus } from "./shared/utils";
 import { authRoutes } from "./modules/auth";
+import { TokenStatus } from "./shared/utils";
 
 declare module "fastify" {
   export interface FastifyRequest {

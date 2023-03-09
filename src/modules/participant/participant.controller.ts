@@ -1,6 +1,10 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { CreateParticipantInput, DisableParticipantInput } from "./participant.schema";
-import { createParticipant, disableParticipant } from "./participant.service";
+import {
+  CreateParticipantInput,
+  DisableParticipantInput,
+  createParticipant,
+  disableParticipant
+} from ".";
 
 export const createParticipantHandler = async (
   req: FastifyRequest<{ Body: CreateParticipantInput }>,
@@ -9,18 +13,20 @@ export const createParticipantHandler = async (
   const body = req.body;
 
   try {
-    const participant = await createParticipant(body);
+    await createParticipant(body);
 
     return res.code(201).send({
       success: true,
-      message: "Participante criado com sucesso",
-      data: participant
+      code: 201,
+      message: "Participante criado com sucesso.",
+      data: null
     });
   } catch (error) {
     return res.code(500).send({
       success: false,
-      message: "Não foi possível criar o participante",
-      data: null
+      code: 500,
+      message: "Não foi possível criar o participante.",
+      data: error
     });
   }
 }
@@ -37,14 +43,16 @@ export const disableParticipantHandler = async (
 
     return res.code(200).send({
       success: true,
-      message: "Participante desabilitado com sucesso",
+      code: 200,
+      message: "Participante desabilitado com sucesso.",
       data: null
     });
   } catch (error) {
     return res.code(500).send({
       success: false,
-      message: "Não foi possível desabilitar o participante",
-      data: null
-    })
+      code: 500,
+      message: "Não foi possível desabilitar o participante.",
+      data: error
+    });
   }
 }

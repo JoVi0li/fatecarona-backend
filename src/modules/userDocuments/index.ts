@@ -1,6 +1,12 @@
 export { userDocumentsRoutes } from './userDocuments.route';
 
 export {
+  CreateUserDocumentDatabase,
+  UpdateUserDocumentsDatabase,
+  DeleteUserDocumentSchema
+} from './userDocuments.schema';
+
+export {
   createUserDocumentsHandler,
   updateUserDocumentsHandler,
   getUserDocumentsHandler,
