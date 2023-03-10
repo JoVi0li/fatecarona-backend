@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { createUserHandler, deleteUserHandler, getUserHandler, udpateUserHandler } from "./user.controller";
+import { createUserHandler, deleteUserHandler, getUserHandler, udpateUserHandler } from ".";
 
 const userRoutes = async (server: FastifyInstance) => {
 

@@ -1,5 +1,5 @@
-import { prisma } from "../../shared/utils/prisma";
-import { CreateUserCollegeDatabase, UpdateUserCollegeRole } from "./userCollege.schema";
+import { prismaService as prisma } from "../../shared/services";
+import { CreateUserCollegeDatabase, UpdateUserCollegeRole } from ".";
 
 export const createUserCollege = async (input: CreateUserCollegeDatabase) => {
   return await prisma.userCollege.create({
@@ -15,9 +15,9 @@ export const findUserCollegeById = async (id: string) => {
     include: {
       userDocument: true,
       user: true,
-      course: true,
+      course: true
     }
-  })
+  });
 };
 
 export const findUserCollegeByUserId = async (id: string) => {
@@ -27,20 +27,9 @@ export const findUserCollegeByUserId = async (id: string) => {
     }, include: {
       userDocument: true,
       user: true,
-      course: true,
+      course: true
     }
   });
-}
-
-export const findEventsWhereIAmParticipant = async (id: string) => {
-  return await prisma.userCollege.findMany({
-    where: {
-      id: id
-    },
-    select: {
-      participantEvents: true
-    },
-  })
 }
 
 export const deleteUserCollegeById = async (id: string) => {
@@ -60,7 +49,7 @@ export const updateUserCollegeRole = async (id: string, newRole: UpdateUserColle
       role: newRole.role
     },
     include: {
-      userDocument: true,
+      userDocument: true
     }
   })
 }

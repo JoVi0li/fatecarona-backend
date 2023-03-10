@@ -1,5 +1,10 @@
 import { FastifyInstance } from "fastify";
-import { createUserDocumentsHandler, deleteUserDocumentsHandler, getUserDocumentsHandler, updateUserDocumentsHandler } from "./userDocuments.controller";
+import {
+  createUserDocumentsHandler,
+  deleteUserDocumentsHandler,
+  getUserDocumentsHandler,
+  updateUserDocumentsHandler
+} from ".";
 
 
 const userDocumentsRoutes = async (server: FastifyInstance) => {

@@ -1,4 +1,4 @@
-import { prisma } from "../../shared/utils/prisma";
+import { prismaService as prisma } from "../../shared/services";
 import { CreateEventInput, UpdateEventStatusInput } from "./event.schema";
 
 export const createEvent = async (body: CreateEventInput) => {
@@ -15,35 +15,39 @@ export const deleteEvent = async (id: string) => {
   });
 }
 
-export const getActiveEvents = async () => {
+export const getAvailableEvents = async () => {
   return await prisma.event.findMany({
     where: {
       status: "WAITING_PARTICIPANTS"
-    },
-    select: {
-      id: true,
-      owner: true,
-      aPoint: true,
-      bPoint: true,
-      status: true,
-      createdAt: true,
-      fromTo: true,
-      participants: {
-        where: {
-          active: true
-        }
-      }
     }
   });
 }
 
-export const getEventsWhereIAmOwner = async (userCollegeId: string) => {
+export const getOwnedEvent = async (id: string) => {
   return await prisma.event.findMany({
     where: {
-      ownerId: userCollegeId,
-      
+      ownerId: id,
     }
-  })
+  });
+}
+
+export const getParticipantEvent = async (id: string) => {
+  return await prisma.userCollege.findMany({
+    where: {
+      id: id
+    },
+    select: {
+      participantEvents: true
+    },
+  });
+}
+
+export const getEventDetails = async (id: string) => {
+  return await prisma.event.findUnique({
+    where: {
+      id: id
+    }
+  });
 }
 
 export const updateEventStatus = async (id: string, newStatus: UpdateEventStatusInput) => {

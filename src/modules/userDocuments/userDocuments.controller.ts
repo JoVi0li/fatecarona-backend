@@ -1,9 +1,14 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { findUserCollegeByUserId } from "../userCollege/userCollege.service";
-import { DeleteUserDocumentSchema } from "./userDocuments.schema";
-import { createUserDocuments, deleteUserDocumentsById, getUserDocumentsById, updateUserDocuments } from "./userDocuments.service";
-import { useS3 } from "../../shared/services";
+import { findUserCollegeByUserId } from "../userCollege";
+import { s3Service } from "../../shared/services";
 import { validateDocumentEmitter as emitter } from "../validations";
+import {
+  createUserDocuments,
+  deleteUserDocumentsById,
+  getUserDocumentsById,
+  updateUserDocuments,
+  DeleteUserDocumentSchema
+} from ".";
 
 const documentTypeEvent = {
   "IDENTITY_DOCUMENT_FRONT": "validateUserDocumentFront",
@@ -22,40 +27,41 @@ export const createUserDocumentsHandler = async (
   const userCollege = await findUserCollegeByUserId(id);
 
   if (!userCollege) {
-    return res.send({
+    return res.status(404).send({
       success: false,
-      message: "Estudante inválidos",
-      error: null,
+      code: 404,
+      message: "Não foi possível encontrar o estudante.",
+      error: null
     });
   }
 
-  const { uploadMultipleFiles } = useS3();
+  const { uploadMultipleFiles } = s3Service();
 
   try {
     const uploadedFiles = await uploadMultipleFiles(files);
-
-    const result: string[] = [];
 
     for await (const file of uploadedFiles) {
       const document = await createUserDocuments({
         userCollegeId: userCollege.id,
         key: file.key,
-        type: file.type,
+        type: file.type
       });
-      result.push(file.key);
+
       emitter.emit(documentTypeEvent[document.type], document);
     }
 
     return res.code(201).send({
       success: true,
-      message: "Documentos do usuário criados com sucesso",
-      data: result
+      code: 201,
+      message: "Documentos do usuário criados com sucesso.",
+      data: null
     });
   } catch (error) {
-    return res.send({
+    return res.status(500).send({
       success: false,
-      message: "Não foi possível criar os documentos do usuário",
-      error: error,
+      code: 500,
+      message: "Não foi possível criar os documentos do usuário.",
+      error: error
     });
   }
 }
@@ -105,7 +111,8 @@ export const deleteUserDocumentsHandler = async (
   if (!student) {
     return res.code(404).send({
       success: false,
-      message: "Estudante não encontrado",
+      code: 404,
+      message: "Estudante não encontrado.",
       data: null
     });
   }
@@ -115,14 +122,16 @@ export const deleteUserDocumentsHandler = async (
   if (!document) {
     return res.code(404).send({
       success: false,
-      message: "Documento não encontrado",
+      code: 404,
+      message: "Documento não encontrado.",
       data: null
     });
   }
 
   if (document.userCollegeId !== student.id) {
-    return res.code(400).send({
+    return res.code(403).send({
       success: false,
+      code: 403,
       message: "Você não tem permissão para realizar essa operação",
       data: null
     });
@@ -133,6 +142,7 @@ export const deleteUserDocumentsHandler = async (
   if (!documents) {
     return res.code(500).send({
       success: false,
+      code: 500,
       message: "Não foi possível excluir os documentos",
       data: null,
     });
@@ -140,6 +150,7 @@ export const deleteUserDocumentsHandler = async (
 
   return res.code(200).send({
     success: false,
+    code: 500,
     message: "Documentos removidos com sucesso",
     data: null
   });
@@ -153,14 +164,15 @@ export const updateUserDocumentsHandler = async (
   const file = await req.file();
   const fileType = file?.fieldname;
 
-  const { uploadFile } = useS3();
+  const { uploadFile } = s3Service();
 
   const student = await findUserCollegeByUserId(id);
 
   if (!student) {
     return res.code(404).send({
       success: false,
-      message: "Estudante não encontrado",
+      code: 404,
+      message: "Estudante não encontrado.",
       data: null
     });
   }
@@ -170,7 +182,8 @@ export const updateUserDocumentsHandler = async (
   if (!oldDoc) {
     return res.code(404).send({
       success: false,
-      message: "Documentos não encontrados",
+      code: 404,
+      message: "Documentos não encontrados.",
       data: null
     });
   }
@@ -178,32 +191,28 @@ export const updateUserDocumentsHandler = async (
   if (oldDoc.userCollegeId !== student.id) {
     return res.code(400).send({
       success: false,
-      message: "Você não tem permissão para realizar essa operação",
+      code: 400,
+      message: "Você não tem permissão para realizar essa operação.",
       data: null
     });
   }
 
   try {
     const fileUploaded = await uploadFile(file);
-    const userDocument = await updateUserDocuments(
-      oldDoc.id,
-      {
-        key: fileUploaded.key,
-        isValid: false
-      },
-      oldDoc
-    );
+    const userDocument = await updateUserDocuments(oldDoc.id, { key: fileUploaded.key, isValid: false }, oldDoc);
     emitter.emit(documentTypeEvent[userDocument.type], userDocument);
     return res.code(200).send({
       success: true,
-      message: "Documento atualizado com sucesso",
+      code: 200,
+      message: "Documento atualizado com sucesso.",
       data: userDocument.id,
     });
   } catch (error) {
     return res.code(500).send({
       success: false,
-      message: "Nao foi possível atualizar o documento",
-      error: error,
+      code: 500,
+      message: "Nao foi possível atualizar o documento.",
+      error: error
     });
   }
 };

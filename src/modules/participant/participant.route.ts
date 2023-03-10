@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { createParticipantHandler, disableParticipantHandler } from "./participant.controller";
+import { createParticipantHandler, disableParticipantHandler } from ".";
 
 const participantRoutes = async (server: FastifyInstance) => {
   server.post('/', { preHandler: [server.auth] }, createParticipantHandler);

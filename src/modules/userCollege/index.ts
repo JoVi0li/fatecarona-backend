@@ -1,5 +1,11 @@
 export { userCollegeRoutes } from "./userCollege.route";
 
+export  { 
+  CreateUserCollegeInput,
+  UpdateUserCollegeRole,
+  CreateUserCollegeDatabase
+} from './userCollege.schema';
+
 export {
   createUserCollegeHandler,
   updateUserCollegeRoleHandler,
@@ -10,7 +16,6 @@ export {
 export {
   createUserCollege,
   updateUserCollegeRole,
-  findEventsWhereIAmParticipant,
   findUserCollegeById,
   deleteUserCollegeById,
   findUserCollegeByUserId

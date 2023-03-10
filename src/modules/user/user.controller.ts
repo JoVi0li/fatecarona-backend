@@ -1,8 +1,14 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { CreateUserInput, UpdateUserInput } from "./user.schema";
-import { createUser, deleteUserById, findUserById, updateUser } from "./user.service";
 import { validateEmailEmitter as emitter } from "../validations";
 import { jwtUtil } from "../../shared/utils";
+import {
+  createUser,
+  deleteUserById,
+  findUserById,
+  updateUser,
+  CreateUserInput,
+  UpdateUserInput
+} from ".";
 
 export const createUserHandler = async (
   req: FastifyRequest<{ Body: CreateUserInput }>,
@@ -21,8 +27,9 @@ export const createUserHandler = async (
 
     return res.code(201).send({
       success: true,
-      message: "Usuário criado com sucesso",
-      data: token,
+      code: 201,
+      message: "Usuário criado com sucesso.",
+      data: token
     });
 
   } catch (error) {
@@ -30,7 +37,7 @@ export const createUserHandler = async (
     return res.code(500).send({
       success: false,
       code: 500,
-      message: "Nao foi possível criar o usuário",
+      message: "Nao foi possível criar o usuário.",
       error: error
     });
 
@@ -48,7 +55,9 @@ export const getUserHandler = async (
   if (!user) {
     return res.code(404).send({
       success: false,
-      message: "Usuário não encontrado"
+      code: 404,
+      message: "Usuário não encontrado.",
+      error: null
     });
   }
 
@@ -56,7 +65,8 @@ export const getUserHandler = async (
 
   return res.code(200).send({
     success: true,
-    message: "Usuário encontrado",
+    code: 200,
+    message: "Usuário encontrado.",
     data: { ...rest }
   });
 };
@@ -72,13 +82,16 @@ export const deleteUserHandler = async (
   if (!user) {
     return res.code(500).send({
       success: false,
-      message: "Não foi possível excluir a conta"
+      code: 500,
+      message: "Não foi possível excluir a conta.",
+      error: null
     });
   }
 
   return res.code(200).send({
     success: true,
-    message: "Conta removida com sucesso",
+    code: 200,
+    message: "Conta removida com sucesso.",
     data: null
   });
 }
@@ -95,7 +108,8 @@ export const udpateUserHandler = async (
   if (!user) {
     return res.code(404).send({
       success: false,
-      message: "Usuário não encontrado",
+      code: 404,
+      message: "Usuário não encontrado.",
       data: null
     });
   }
@@ -107,13 +121,15 @@ export const udpateUserHandler = async (
 
     return res.code(200).send({
       success: true,
-      message: "Usuário atualizado com sucesso",
+      code: 200,
+      message: "Usuário atualizado com sucesso.",
       data: { ...rest }
     });
   } catch (error) {
     return res.code(500).send({
       success: false,
-      message: "Não foi possível atualizar o usuário",
+      code: 500,
+      message: "Não foi possível atualizar o usuário.",
       error: error
     });
   }

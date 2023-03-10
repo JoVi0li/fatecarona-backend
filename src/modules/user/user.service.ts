@@ -1,4 +1,4 @@
-import { prisma } from "../../shared/utils/prisma";
+import { prismaService as prisma } from "../../shared/services";
 import { CreateUserDatabase, UpdateUserDatabase } from "./user.schema";
 import bcrypt from "bcrypt";
 import { User } from "@prisma/client";
@@ -54,7 +54,7 @@ export const updateUser = async (newUser: UpdateUserDatabase, oldUser: User) => 
     data: {
       name: newUser.name ?? oldUser.name,
       phone: newUser.phone ?? oldUser.phone,
-      gender: newUser.gender ?? oldUser.gender,
+      gender: newUser.gender ?? oldUser.gender
     }
   });
 }

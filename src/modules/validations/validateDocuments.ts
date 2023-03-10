@@ -1,6 +1,6 @@
 import { UserDocument } from "@prisma/client";
 import { EventEmitter } from "events";
-import { useS3, useOCR } from "../../shared/services";
+import { s3Service, OCRService } from "../../shared/services";
 import { getCollege } from "../college/college.service";
 import { findUserCollegeById } from "../userCollege";
 import { validateStudentNumber } from "../userCollege/userCollege.service";
@@ -9,7 +9,7 @@ import { getUserDocumentsById, updateUserDocuments } from "../userDocuments";
 const emitter = new EventEmitter();
 
 emitter.on('validateUserPhoto', async (photo: UserDocument) => {
-  const { getFile } = useS3();
+  const { getFile } = s3Service();
 
   const file = await getFile(photo.key);
   const document = await getUserDocumentsById(photo.id);
@@ -37,8 +37,7 @@ emitter.on('validateUserPhoto', async (photo: UserDocument) => {
 });
 
 emitter.on('validateUserDocumentFront', async (document: UserDocument) => {
-  const { getFileUrl } = useS3();
-  const { readFile } = useOCR();
+  const { getFileUrl } = s3Service();
 
   const url = await getFileUrl(document.key);
 
@@ -61,8 +60,8 @@ emitter.on('validateUserDocumentFront', async (document: UserDocument) => {
 });
 
 emitter.on('validateUserDocumentBack', async (document: UserDocument) => {
-  const { getFileUrl } = useS3();
-  const { readFile } = useOCR();
+  const { getFileUrl } = s3Service();
+  const { readFile } = OCRService();
 
   const url = await getFileUrl(document.key);
 
@@ -88,8 +87,8 @@ emitter.on('validateUserDocumentBack', async (document: UserDocument) => {
 });
 
 emitter.on('validateCollegeDocument', async (document: UserDocument) => {
-  const { getFileUrl } = useS3();
-  const { readFile } = useOCR();
+  const { getFileUrl } = s3Service();
+  const { readFile } = OCRService();
 
   const url = await getFileUrl(document.key);
 

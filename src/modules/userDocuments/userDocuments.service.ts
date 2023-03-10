@@ -1,6 +1,6 @@
 import { UserDocument } from "@prisma/client";
-import { prisma } from "../../shared/utils/prisma";
-import { CreateUserDocumentDatabase, UpdateUserDocumentsDatabase, } from "./userDocuments.schema";
+import { prismaService as prisma } from "../../shared/services";
+import { CreateUserDocumentDatabase, UpdateUserDocumentsDatabase, } from ".";
 
 export const createUserDocuments = async (input: CreateUserDocumentDatabase) => {
   const userDocuments = await prisma.userDocument.create({

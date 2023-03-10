@@ -1,19 +1,27 @@
 import { FastifyRequest, FastifyReply } from "fastify";
+import { verifyUserEmail, SignInUserInput } from ".";
 import { findUserByEmail, findUserById } from "../user/user.service";
-import { SigninUserInput } from "./auth.schema";
-import bcrypt from "bcrypt";
-import { verifyEmail } from "./auth.service";
+import { getUserDocumentByUserCollegeId } from "../userDocuments/userDocuments.service";
 import { jwtUtil } from "../../shared/utils";
-import { getInvalidUserDocumentByUserCollegeId, getUserDocumentByUserCollegeId } from "../userDocuments/userDocuments.service";
+import bcrypt from "bcrypt";
 
-export const signinHandler = async (
-  req: FastifyRequest<{ Body: SigninUserInput }>,
+export const signInHandler = async (
+  req: FastifyRequest<{ Body: SignInUserInput }>,
   res: FastifyReply,
 ) => {
   const { generateSignInToken } = jwtUtil(req);
-  const body = req.body;
 
+  const body = req.body;
   const user = await findUserByEmail(body.email);
+
+  if (!user) {
+    return res.status(400).send({
+      success: false,
+      code: 400,
+      message: "Usuário inválido",
+      error: null
+    });
+  }
 
   if (!user?.userCollege) {
     return res.status(400).send({
@@ -33,30 +41,21 @@ export const signinHandler = async (
     });
   }
 
-  if (!user) {
-    return res.status(401).send({
-      success: false,
-      code: 401,
-      message: "Credenciais inválidas",
-      error: null
-    });
-  }
+  const isCorrectPassword = await bcrypt.compare(body.password, user.password);
 
-  const correctPassword = await bcrypt.compare(body.password, user.password);
-
-  if (!correctPassword) {
-    return res.status(401).send({
+  if (!isCorrectPassword) {
+    return res.status(400).send({
       success: false,
-      code: 401,
+      code: 400,
       message: "Credenciais inválidas",
       error: null
     });
   }
 
   if (!user.verifiedEmail) {
-    return res.status(401).send({
+    return res.status(400).send({
       success: false,
-      code: 401,
+      code: 400,
       message: "E-mail não verificado",
       error: null
     });
@@ -91,10 +90,9 @@ export const signinHandler = async (
     message: "Autenticado com sucesso",
     data: token
   });
-
 };
 
-export const verifyEmailHandler = async (
+export const verifyUserEmailHandler = async (
   req: FastifyRequest<{ Params: { id: string } }>,
   res: FastifyReply
 ) => {
@@ -105,7 +103,7 @@ export const verifyEmailHandler = async (
       success: false,
       status: 400,
       message: "Token inválido",
-      error: null,
+      error: null
     });
   }
 
@@ -116,7 +114,7 @@ export const verifyEmailHandler = async (
       success: false,
       code: 404,
       message: "Usuário não encontrado.",
-      error: null,
+      error: null
     });
   }
 
@@ -125,18 +123,18 @@ export const verifyEmailHandler = async (
       success: false,
       code: 400,
       message: "Usuário já verificado",
-      error: null,
+      error: null
     });
   }
 
-  const updatedUser = await verifyEmail(user.id);
+  const updatedUser = await verifyUserEmail(user.id);
 
   if (!updatedUser.verifiedEmail) {
     return res.code(500).send({
       success: false,
       code: 500,
       message: "Não foi possível verificar o e-mail do usuário.",
-      error: null,
+      error: null
     });
   }
 

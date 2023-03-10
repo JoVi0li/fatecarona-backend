@@ -1,10 +1,10 @@
 import { FastifyInstance } from "fastify";
-import { signinHandler, verifyEmailHandler } from "./auth.controller";
+import { signInHandler, verifyUserEmailHandler } from "./auth.controller";
 
 const authRoutes = async (server: FastifyInstance) => {
-  server.post("/signin", signinHandler);
+  server.post("/signin", signInHandler);
   
-  server.get("/verifyemail/:id", verifyEmailHandler);
+  server.get("/verifyemail/:id", verifyUserEmailHandler);
 }
 
 export default authRoutes;

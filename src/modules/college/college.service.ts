@@ -1,18 +1,16 @@
-import { prisma } from "../../shared/utils/prisma";
-import { CreateCollegeInput, UpdateCollegeNameInput } from "./college.schema";
+import { prismaService as prisma } from "../../shared/services";
+import { CreateCollegeInput, UpdateCollegeNameInput } from ".";
 
 export const createCollege = async (input: CreateCollegeInput) => {
-  const college = await prisma.college.create({
+  return await prisma.college.create({
     data: input
   });
-
-  return college;
 }
 
 export const getCollege = async (id: string) => {
   return await prisma.college.findUnique({
     where: {
-      id: id,
+      id: id
     }
   });
 }
