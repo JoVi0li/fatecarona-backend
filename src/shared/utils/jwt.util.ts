@@ -3,6 +3,7 @@ import { getPhotoByUserCollegeId } from "../../modules/userDocuments";
 import { User, UserCollege } from "@prisma/client";
 import { SignUpToken, SignInToken } from "./types";
 import { s3Service } from "../services";
+import { SignOptions } from "@fastify/jwt";
 
 const jwtUtil = (req: FastifyRequest) => {
 
@@ -14,9 +15,12 @@ const jwtUtil = (req: FastifyRequest) => {
       status: "SIGNUP"
     };
 
-    const options = {
+    const options: Partial<SignOptions> = {
+      algorithm: "HS256",
+      aud: "FatecaronaApp",
+      iss: "FateronaServer",
       expiresIn: "1h",
-      aud: "Fatecarona"
+      sub: "SIGNUP",
     };
 
     const token = req.jwt.sign(data, options);
@@ -46,10 +50,12 @@ const jwtUtil = (req: FastifyRequest) => {
       photoUrl: photoUrl
     };
 
-    const options = {
-      expiresIn: 60 * 24 * 7,
-      aud: "Fatecarona",
-
+    const options: Partial<SignOptions> = {
+      algorithm: "HS256",
+      aud: "FatecaronaApp",
+      iss: "FateronaServer",
+      expiresIn: "7d",
+      sub: "SIGNIN",
     };
 
     const token = req.jwt.sign(data, options);
