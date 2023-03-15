@@ -13,6 +13,7 @@ emitter.on("verifyEmail", async (user: User) => {
   const authUser = process.env.SENDGRID_USER!;
   const authPass = process.env.SENDGRID_PASS!;
   const mailFrom = process.env.MAIL_FROM!;
+  const verifyEmailUrl = process.env.VERIFY_EMAIL_URL!;
 
   const transport = nodemailer.createTransport({
     host: host,
@@ -33,7 +34,7 @@ emitter.on("verifyEmail", async (user: User) => {
           
           Por favor, clique no link abaixo para realizar a confirmação.
           
-          http://127.0.0.1:3030/api/auth/verifyemail/${user.id}
+          ${verifyEmailUrl}/api/auth/verifyemail/${user.id}
           
           Obrigado!`
   };
