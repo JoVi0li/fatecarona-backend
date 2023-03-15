@@ -91,7 +91,7 @@ const buildServer = async () => {
     await server.ready();
     await server.listen({ port: port });
     server.swagger();
-    console.log(`Running on: ${port}`)
+    console.log(`Server running`)
   } catch (error) {
     console.error(error);
     process.exit(1);
