@@ -46,9 +46,13 @@ export const getEventDetails = async (id: string) => {
   return await prisma.event.findUnique({
     where: {
       id: id
+    },
+    include: {
+      participants: true
     }
   });
 }
+
 
 export const updateEventStatus = async (id: string, newStatus: UpdateEventStatusInput) => {
   return await prisma.event.update({
